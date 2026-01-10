@@ -1,10 +1,14 @@
-#version 400
+#version 330 core
+out vec4 FragColor;
 
-out vec4 fragColor;
+in vec2 TexCoords;
 
-uniform sampler2D texture1;
+uniform sampler2D texture_diffuse1;
 
 void main()
 {
-    fragColor = vec4(1.0f);
+    
+    vec2 debugCoords = gl_FragCoord.xy / 700.0; 
+    
+    FragColor = texture(texture_diffuse1, debugCoords);
 }
