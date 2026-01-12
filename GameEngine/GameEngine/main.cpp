@@ -12,6 +12,7 @@
 
 void processKeyboardInput();
 Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex); 
+Mesh generateCircularRiver(float radius, float width, int segments, std::vector<Texture> tex);
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -21,6 +22,9 @@ Camera camera;
 
 glm::vec3 lightColor = glm::vec3(1.0f);
 glm::vec3 lightPos = glm::vec3(-180.0f, 100.0f, -200.0f);
+
+glm::vec3 catPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+float catRotationY = 180.0f;
 
 int main()
 {
@@ -33,6 +37,7 @@ int main()
     Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader waterShader("Shaders/water_vertex_shader.glsl", "Shaders/water_fragment_shader.glsl");
+    Shader riverShader("Shaders/river_vertex_shader.glsl", "Shaders/river_fragment_shader.glsl");
 
     // Load Textures
     GLuint tex = loadBMP("Resources/Textures/wood.bmp");
@@ -41,7 +46,7 @@ int main()
     GLuint tex4 = loadBMP("Resources/Textures/cat.bmp");
     GLuint tex5 = loadBMP("Resources/Textures/grass.bmp");
     GLuint skyTexID = loadBMP("Resources/Textures/sky.bmp");
-
+   
     glBindTexture(GL_TEXTURE_2D, skyTexID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -73,13 +78,16 @@ int main()
     skyTextures[0].id = skyTexID;
     skyTextures[0].type = "texture_diffuse";
 
+   
     //Load Models
     MeshLoaderObj loader;
     Mesh sun = loader.loadObj("Resources/Models/sphere.obj",textures3);
     Mesh plane = loader.loadObj("Resources/Models/plane.obj", textures5);
     Mesh cat = loader.loadObj("Resources/Models/cat.obj", textures4);
     Mesh skySphere = loader.loadObj("Resources/Models/sphere.obj", skyTextures);
-    Mesh waterMesh = generateWaterGrid(50, 1.0f,textures2);
+    Mesh waterMesh = generateWaterGrid(120, 1.0f,textures2);
+    Mesh riverMesh = generateCircularRiver(50, 100, 1.0f, textures2);
+
 
     float titleUpdateTimer = 0.0f;
 
@@ -92,6 +100,8 @@ int main()
         lastFrame = currentFrame;
 
         processKeyboardInput();
+        glm::vec3 cameraOffset = glm::vec3(0.0f, 15.0f, 30.0f);
+        camera.setCameraPosition(catPosition + cameraOffset);
 
         // Tracker Logic
         titleUpdateTimer += deltaTime;
@@ -121,20 +131,28 @@ int main()
 
         //Draw water
         waterShader.use();
-
-        // Position the water
-        glm::vec3 waterPosition = glm::vec3(70.0f, -20.0f, 43.0f);
-
+        glm::vec3 waterPosition = glm::vec3(200.0f, -20.0f, 120.0f);
         glm::mat4 WaterModel = glm::translate(glm::mat4(1.0), waterPosition);
         glm::mat4 WaterMVP = ProjectionMatrix * ViewMatrix * WaterModel;
-
         glUniformMatrix4fv(glGetUniformLocation(waterShader.getId(), "MVP"), 1, GL_FALSE, &WaterMVP[0][0]);
         glUniform1f(glGetUniformLocation(waterShader.getId(), "time"), (float)glfwGetTime());
         glUniform3f(glGetUniformLocation(waterShader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
         glUniform3f(glGetUniformLocation(waterShader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
         glUniform3f(glGetUniformLocation(waterShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
-
         waterMesh.draw(waterShader);
+
+        //Draw river
+        Mesh riverMesh = generateCircularRiver(50.0f, 100.0f, 100, textures2);
+        riverShader.use();
+        glm::vec3 riverPos = glm::vec3(-120.0f, -19.5f, -85.0f);
+        glm::mat4 RiverModel = glm::translate(glm::mat4(1.0), riverPos);
+        glm::mat4 RiverMVP = ProjectionMatrix * ViewMatrix * RiverModel;
+        glUniformMatrix4fv(glGetUniformLocation(riverShader.getId(), "MVP"), 1, GL_FALSE, &RiverMVP[0][0]);
+        glUniform1f(glGetUniformLocation(riverShader.getId(), "time"), (float)glfwGetTime());
+        glUniform3f(glGetUniformLocation(riverShader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+        glUniform3f(glGetUniformLocation(riverShader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        glUniform3f(glGetUniformLocation(riverShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+        riverMesh.draw(riverShader);
 
     
         shader.use();
@@ -145,44 +163,67 @@ int main()
         GLuint MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
         GLuint ModelMatrixID = glGetUniformLocation(shader.getId(), "model");
 
-        // Plane
+
+        // Draw plane
         glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, -20.0f, 0.0f));
+        float planeScale = 3.0f;
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(planeScale, planeScale, planeScale));
         glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         plane.draw(shader);
 
-        //Cat
+        // Draw cat
         ModelMatrix = glm::mat4(1.0);
+        ModelMatrix = glm::translate(ModelMatrix, catPosition);
+        ModelMatrix = glm::rotate(ModelMatrix, glm::radians(catRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+        float catScale = 5.0f;
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(catScale, catScale, catScale));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         cat.draw(shader);
+       
 
-        //Sun
+        // Draw sun
         sunShader.use();
         ModelMatrix = glm::translate(glm::mat4(1.0), lightPos);
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(glGetUniformLocation(sunShader.getId(), "MVP"), 1, GL_FALSE, &MVP[0][0]);
-        sun.draw(sunShader);  
-
+        sun.draw(sunShader);
+		
         window.update();
     }
 }
 
 void processKeyboardInput()
 {
-    float cameraSpeed = 30 * deltaTime;
-    if (window.isPressed(GLFW_KEY_W)) camera.keyboardMoveFront(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_S)) camera.keyboardMoveBack(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_A)) camera.keyboardMoveLeft(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_D)) camera.keyboardMoveRight(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_R)) camera.keyboardMoveUp(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_F)) camera.keyboardMoveDown(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_LEFT)) camera.rotateOy(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_RIGHT)) camera.rotateOy(-cameraSpeed);
-    if (window.isPressed(GLFW_KEY_UP)) camera.rotateOx(cameraSpeed);
-    if (window.isPressed(GLFW_KEY_DOWN)) camera.rotateOx(-cameraSpeed);
+    //Define speeds
+    float cameraRotationSpeed = 30 * deltaTime;
+    float catSpeed = 20.0f * deltaTime;
+
+    // W =Forward (- Z)
+    if (window.isPressed(GLFW_KEY_W))
+        catPosition.z -= catSpeed;
+
+    // S = Backward (+ Z)
+    if (window.isPressed(GLFW_KEY_S))
+        catPosition.z += catSpeed;
+
+    // A =Left (- X)
+    if (window.isPressed(GLFW_KEY_A))
+        catPosition.x -= catSpeed;
+
+    // D = Right (+ X)
+    if (window.isPressed(GLFW_KEY_D))
+        catPosition.x += catSpeed;
+
+    //Camera Rotation 
+    if (window.isPressed(GLFW_KEY_LEFT)) camera.rotateOy(cameraRotationSpeed);
+    if (window.isPressed(GLFW_KEY_RIGHT)) camera.rotateOy(-cameraRotationSpeed);
+    if (window.isPressed(GLFW_KEY_UP)) camera.rotateOx(cameraRotationSpeed);
+    if (window.isPressed(GLFW_KEY_DOWN)) camera.rotateOx(-cameraRotationSpeed);
+
 }
 
 //Helper function to create the high-poly water
@@ -223,6 +264,59 @@ Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex )
             indices.push_back(topRight);
 
             //Triangle 2
+            indices.push_back(topRight);
+            indices.push_back(bottomLeft);
+            indices.push_back(bottomRight);
+        }
+    }
+
+    return Mesh(vertices, indices, textures2);
+}
+
+
+// Helper fct to create a circular river mesh
+Mesh generateCircularRiver(float radius, float width, int segments, std::vector<Texture> tex)
+{
+    std::vector<Vertex> vertices;
+    std::vector<int> indices;
+    std::vector<Texture> textures2 = tex;
+
+    float innerRadius = radius - (width / 2.0f);
+
+    int widthSegments = 18; 
+
+    for (int i = 0; i <= segments; ++i) {
+        float theta = (float)i / segments * 2.0f * 3.1415926f;
+        float cosTheta = cos(theta);
+        float sinTheta = sin(theta);
+
+        for (int j = 0; j <= widthSegments; ++j) {
+            float r = innerRadius + ((float)j / widthSegments) * width;
+
+            Vertex v;
+            // polar to cartesian conversion
+            v.pos.x = r * cosTheta;
+            v.pos.y = 0.0f;
+            v.pos.z = r * sinTheta;
+            v.normals = glm::vec3(0.0f, 1.0f, 0.0f);
+            v.textureCoords = glm::vec2(((float)i / segments) * 20.0f, (float)j / widthSegments);
+
+            vertices.push_back(v);
+        }
+    }
+
+    // Generate Indices
+    for (int i = 0; i < segments; ++i) {
+        for (int j = 0; j < widthSegments; ++j) {
+            int topLeft = (i * (widthSegments + 1)) + j;
+            int topRight = topLeft + 1;
+            int bottomLeft = ((i + 1) * (widthSegments + 1)) + j;
+            int bottomRight = bottomLeft + 1;
+
+            indices.push_back(topLeft);
+            indices.push_back(bottomLeft);
+            indices.push_back(topRight);
+
             indices.push_back(topRight);
             indices.push_back(bottomLeft);
             indices.push_back(bottomRight);
