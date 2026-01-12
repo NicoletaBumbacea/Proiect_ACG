@@ -44,8 +44,11 @@ int main()
     GLuint tex2 = loadBMP("Resources/Textures/watah.bmp");
     GLuint tex3 = loadBMP("Resources/Textures/orange.bmp");
     GLuint tex4 = loadBMP("Resources/Textures/cat.bmp");
-    GLuint tex5 = loadBMP("Resources/Textures/grass.bmp");
+    GLuint tex5 = loadBMP("Resources/Textures/sand.bmp");
     GLuint skyTexID = loadBMP("Resources/Textures/sky.bmp");
+    GLuint boatTexID = loadBMP("Resources/Textures/boat_color.bmp");
+    GLuint reedTexID = loadBMP("Resources/Textures/reed.bmp");
+    GLuint treeTexID = loadBMP("Resources/Textures/forrest.bmp");
    
     glBindTexture(GL_TEXTURE_2D, skyTexID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -78,6 +81,21 @@ int main()
     skyTextures[0].id = skyTexID;
     skyTextures[0].type = "texture_diffuse";
 
+    std::vector<Texture> boatTextures;
+    boatTextures.push_back(Texture());
+    boatTextures[0].id = boatTexID;
+    boatTextures[0].type = "texture_diffuse";
+
+    std::vector<Texture> reedTextures;
+    reedTextures.push_back(Texture());
+    reedTextures[0].id = reedTexID;
+    reedTextures[0].type = "texture_diffuse";
+
+    std::vector<Texture> treeTextures;
+    treeTextures.push_back(Texture());
+    treeTextures[0].id = treeTexID;
+    treeTextures[0].type = "texture_diffuse";
+
    
     //Load Models
     MeshLoaderObj loader;
@@ -87,6 +105,9 @@ int main()
     Mesh skySphere = loader.loadObj("Resources/Models/sphere.obj", skyTextures);
     Mesh waterMesh = generateWaterGrid(120, 1.0f,textures2);
     Mesh riverMesh = generateCircularRiver(50, 100, 1.0f, textures2);
+    Mesh boat = loader.loadObj("Resources/Models/boat.obj", boatTextures);
+    Mesh reed = loader.loadObj("Resources/Models/reed.obj", reedTextures);
+    Mesh tree = loader.loadObj("Resources/Models/bigtree.obj", treeTextures);
 
 
     float titleUpdateTimer = 0.0f;
@@ -172,6 +193,50 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         plane.draw(shader);
+
+        //Draw boat
+        ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(-28.0f, -20.0f, -56.0f));
+        float boatScale =0.1f;
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(boatScale, boatScale, boatScale));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        boat.draw(shader);
+
+        // Draw reeds
+        std::vector<glm::vec3> reedPositions = {
+            glm::vec3(-25.0f, -20.0f, -80.0f),
+            glm::vec3(-30.0f, -20.0f, -75.0f),
+            glm::vec3(-20.0f, -20.0f, -82.0f),
+        };
+        for (unsigned int i = 0; i < reedPositions.size(); i++)
+        {
+            ModelMatrix = glm::mat4(1.0);
+            ModelMatrix = glm::translate(ModelMatrix, reedPositions[i]);
+            float reedScale = 2.0f;
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(reedScale, reedScale, reedScale));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            reed.draw(shader);
+        }
+
+        //Draw trees
+        std::vector<glm::vec3> treePositions = {
+            glm::vec3(225.0f, -20.0f, -162.0f),
+            glm::vec3(205.0f, -20.0f, -175.0f),
+            glm::vec3(170.0f, -20.0f, -155.0f),
+        };
+        for (unsigned int i = 0; i < treePositions.size(); i++)
+        {
+            ModelMatrix = glm::translate(glm::mat4(1.0), treePositions[i]);
+            float treeScale = 3.0f;
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(treeScale, treeScale, treeScale));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            tree.draw(shader);
+        }
 
         // Draw cat
         ModelMatrix = glm::mat4(1.0);
