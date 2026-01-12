@@ -20,6 +20,28 @@ float lastFrame = 0.0f;
 Window window("Game Engine", 800, 800);
 Camera camera;
 
+// Fish structure
+struct FishData {
+    glm::vec3 position;
+    glm::vec3 target;   
+    float speed;
+};
+
+glm::vec3 getRandomRiverPoint() {
+ 
+    glm::vec3 center = glm::vec3(-120.0f, -18.6f, -85.0f);
+    float minRadius = 15.0f; 
+    float maxRadius = 90.0f; 
+    float angle = (rand() % 360) * (3.14159f / 180.0f);
+    float radius = minRadius + (rand() % (int)(maxRadius - minRadius));
+    float x = center.x + cos(angle) * radius;
+    float z = center.z + sin(angle) * radius;
+    float y = center.y - 2.0f; 
+
+    return glm::vec3(x, y, z);
+}
+
+
 glm::vec3 lightColor = glm::vec3(1.0f);
 glm::vec3 lightPos = glm::vec3(-180.0f, 100.0f, -200.0f);
 
@@ -44,8 +66,13 @@ int main()
     GLuint tex2 = loadBMP("Resources/Textures/watah.bmp");
     GLuint tex3 = loadBMP("Resources/Textures/orange.bmp");
     GLuint tex4 = loadBMP("Resources/Textures/cat.bmp");
-    GLuint tex5 = loadBMP("Resources/Textures/grass.bmp");
+    GLuint tex5 = loadBMP("Resources/Textures/sand.bmp");
     GLuint skyTexID = loadBMP("Resources/Textures/sky.bmp");
+    GLuint boatTexID = loadBMP("Resources/Textures/boat_color.bmp");
+    GLuint reedTexID = loadBMP("Resources/Textures/reed.bmp");
+    GLuint treeTexID = loadBMP("Resources/Textures/forrest.bmp");
+    GLuint fishTexID = loadBMP("Resources/Textures/fih.bmp");
+
    
     glBindTexture(GL_TEXTURE_2D, skyTexID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -78,6 +105,26 @@ int main()
     skyTextures[0].id = skyTexID;
     skyTextures[0].type = "texture_diffuse";
 
+    std::vector<Texture> boatTextures;
+    boatTextures.push_back(Texture());
+    boatTextures[0].id = boatTexID;
+    boatTextures[0].type = "texture_diffuse";
+
+    std::vector<Texture> reedTextures;
+    reedTextures.push_back(Texture());
+    reedTextures[0].id = reedTexID;
+    reedTextures[0].type = "texture_diffuse";
+
+    std::vector<Texture> treeTextures;
+    treeTextures.push_back(Texture());
+    treeTextures[0].id = treeTexID;
+    treeTextures[0].type = "texture_diffuse";
+
+    std::vector<Texture> fishTextures;
+    fishTextures.push_back(Texture());
+    fishTextures[0].id = fishTexID;
+    fishTextures[0].type = "texture_diffuse";
+
    
     //Load Models
     MeshLoaderObj loader;
@@ -87,7 +134,22 @@ int main()
     Mesh skySphere = loader.loadObj("Resources/Models/sphere.obj", skyTextures);
     Mesh waterMesh = generateWaterGrid(120, 1.0f,textures2);
     Mesh riverMesh = generateCircularRiver(50, 100, 1.0f, textures2);
+    Mesh boat = loader.loadObj("Resources/Models/boat.obj", boatTextures);
+    Mesh reed = loader.loadObj("Resources/Models/reed.obj", reedTextures);
+    Mesh tree = loader.loadObj("Resources/Models/bigtree.obj", treeTextures);
+    Mesh fish = loader.loadObj("Resources/Models/fih.obj", fishTextures);
 
+
+    //Fish data
+    std::vector<FishData> schoolOfFish;
+    // Create 5 random fish
+    for (int i = 0; i < 5; i++) {
+        FishData fish;
+        fish.position = getRandomRiverPoint(); 
+        fish.target = getRandomRiverPoint();   
+        fish.speed = 10.0f + (rand() % 10);  
+        schoolOfFish.push_back(fish);
+    }
 
     float titleUpdateTimer = 0.0f;
 
@@ -172,6 +234,79 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         plane.draw(shader);
+
+        //Draw boat
+        ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(-28.0f, -20.0f, -56.0f));
+        float boatScale =0.1f;
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(boatScale, boatScale, boatScale));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        boat.draw(shader);
+
+        // Draw reeds
+        std::vector<glm::vec3> reedPositions = {
+            glm::vec3(-25.0f, -20.0f, -80.0f),
+            glm::vec3(-30.0f, -20.0f, -75.0f),
+            glm::vec3(-20.0f, -20.0f, -82.0f),
+        };
+        for (unsigned int i = 0; i < reedPositions.size(); i++)
+        {
+            ModelMatrix = glm::mat4(1.0);
+            ModelMatrix = glm::translate(ModelMatrix, reedPositions[i]);
+            float reedScale = 2.0f;
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(reedScale, reedScale, reedScale));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            reed.draw(shader);
+        }
+
+        //Draw trees
+        std::vector<glm::vec3> treePositions = {
+            glm::vec3(225.0f, -20.0f, -162.0f),
+            glm::vec3(205.0f, -20.0f, -175.0f),
+            glm::vec3(170.0f, -20.0f, -155.0f),
+        };
+        for (unsigned int i = 0; i < treePositions.size(); i++)
+        {
+            ModelMatrix = glm::translate(glm::mat4(1.0), treePositions[i]);
+            float treeScale = 3.0f;
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(treeScale, treeScale, treeScale));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            tree.draw(shader);
+        }
+
+         // Draw fih 
+        for (unsigned int i = 0; i < schoolOfFish.size(); i++)
+        {
+            glm::vec3 direction = schoolOfFish[i].target - schoolOfFish[i].position;
+            float distance = glm::length(direction);
+
+            if (distance < 1.0f) {
+            
+                schoolOfFish[i].target = getRandomRiverPoint();
+            }
+            else {
+                glm::vec3 moveDir = glm::normalize(direction);
+                schoolOfFish[i].position += moveDir * schoolOfFish[i].speed * deltaTime;
+            }
+            ModelMatrix = glm::mat4(1.0);
+            ModelMatrix = glm::translate(ModelMatrix, schoolOfFish[i].position);
+
+            float angle = atan2(direction.x, direction.z);
+            ModelMatrix = glm::rotate(ModelMatrix, angle + 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+            float fishScale = 3.0f;
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishScale, fishScale, fishScale));
+
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            fish.draw(shader);
+        }
 
         // Draw cat
         ModelMatrix = glm::mat4(1.0);
