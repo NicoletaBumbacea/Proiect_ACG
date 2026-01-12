@@ -72,6 +72,9 @@ int main()
     GLuint reedTexID = loadBMP("Resources/Textures/reed.bmp");
     GLuint treeTexID = loadBMP("Resources/Textures/forrest.bmp");
     GLuint fishTexID = loadBMP("Resources/Textures/fih.bmp");
+    GLuint hammockTex = loadBMP("Resources/Textures/hammock_tex.bmp");
+    GLuint hammockTreeTex = loadBMP("Resources/Textures/hammockTree_tex.bmp");
+
 
    
     glBindTexture(GL_TEXTURE_2D, skyTexID);
@@ -125,6 +128,16 @@ int main()
     fishTextures[0].id = fishTexID;
     fishTextures[0].type = "texture_diffuse";
 
+    std::vector<Texture> hammockTexture;
+    hammockTexture.push_back(Texture());
+    hammockTexture[0].id = hammockTex;
+    hammockTexture[0].type = "texture_diffuse";
+
+    std::vector<Texture> hammockWoodTexture;
+    hammockWoodTexture.push_back(Texture());
+    hammockWoodTexture[0].id = hammockTreeTex;
+    hammockWoodTexture[0].type = "texture_diffuse";
+
    
     //Load Models
     MeshLoaderObj loader;
@@ -138,6 +151,8 @@ int main()
     Mesh reed = loader.loadObj("Resources/Models/reed.obj", reedTextures);
     Mesh tree = loader.loadObj("Resources/Models/bigtree.obj", treeTextures);
     Mesh fish = loader.loadObj("Resources/Models/fih.obj", fishTextures);
+    Mesh hammock = loader.loadObj("Resources/Models/hammond.obj", hammockTexture);
+    Mesh hammockTrees = loader.loadObj("Resources/Models/cocotierul_vincent.obj", hammockWoodTexture);
 
 
     //Fish data
@@ -318,6 +333,27 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         cat.draw(shader);
+
+        // Draw hammock (support tree + hammock bed)
+        glm::mat4 BaseMatrix = glm::mat4(1.0f);
+        BaseMatrix = glm::translate(BaseMatrix, glm::vec3(210.0f, -20.0f, 25.0f));
+        BaseMatrix = glm::scale(BaseMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
+        BaseMatrix = glm::rotate(BaseMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            // hammock bed
+        MVP = ProjectionMatrix * ViewMatrix * BaseMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &BaseMatrix[0][0]);
+        hammock.draw(shader);
+
+            // positioned hammock tree
+        float treeOffsetZ = -4.5f;
+        float treeOffsetX = 0.4f;
+        glm::mat4 TreeMatrix = glm::translate(BaseMatrix, glm::vec3(treeOffsetX, 0.0f, treeOffsetZ));
+        MVP = ProjectionMatrix * ViewMatrix * TreeMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &TreeMatrix[0][0]);
+        hammockTrees.draw(shader);
        
 
         // Draw sun
