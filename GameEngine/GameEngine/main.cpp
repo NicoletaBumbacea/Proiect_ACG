@@ -69,6 +69,15 @@ bool hasFishingRod = false;
 bool eKeyPressedLastFrame = false;
 glm::vec3 rodWorldPos = glm::vec3(190.0f, -20.0f, -195.0f);
 
+bool isDoorOpen = false;
+glm::vec3 cabinPos = glm::vec3(205.0f, -20.0f, -70.0f);
+
+glm::vec3 interactionPoint = glm::vec3(205.0f, -15.0f, -70.0f);
+float interactionRadius = 15.0f;
+bool isMenuOpen = false;
+
+GLFWwindow* extraWindow = nullptr;
+
 int main()
 {
     glClearColor(0.2f, 0.8f, 1.0f, 1.0f);
@@ -113,6 +122,10 @@ int main()
     GLuint hammockTex = loadBMP("Resources/Textures/hammock_tex.bmp");
     GLuint hammockTreeTex = loadBMP("Resources/Textures/hammockTree_tex.bmp");
     GLuint fishingRodTex = loadBMP("Resources/Textures/fishingRod.bmp");
+    GLuint cabinBodyTex = loadBMP("Resources/Textures/brightwood.bmp");
+    GLuint cabinRoofTex = loadBMP("Resources/Textures/darkwood.bmp");
+    GLuint cabinFoundationTex = loadBMP("Resources/Textures/rock_cabin.bmp");
+    GLuint cabinDoorTex = loadBMP("Resources/Textures/brightwood.bmp");
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -179,6 +192,26 @@ int main()
     fishingRodTextures[0].id = fishingRodTex;
     fishingRodTextures[0].type = "texture_diffuse";
 
+    std::vector<Texture> cabinTexture;
+    cabinTexture.push_back(Texture());
+    cabinTexture[0].id = cabinBodyTex;
+    cabinTexture[0].type = "texture_diffuse";
+
+    std::vector<Texture> cabinFoundationTexture;
+    cabinFoundationTexture.push_back(Texture());
+    cabinFoundationTexture[0].id = cabinFoundationTex;
+    cabinFoundationTexture[0].type = "texture_diffuse";
+
+    std::vector<Texture> cabinRoofTexture;
+    cabinRoofTexture.push_back(Texture());
+    cabinRoofTexture[0].id = cabinRoofTex;
+    cabinRoofTexture[0].type = "texture_diffuse";
+
+    std::vector<Texture> cabinDoorTexture;
+    cabinDoorTexture.push_back(Texture());
+    cabinDoorTexture[0].id = cabinDoorTex;
+    cabinDoorTexture[0].type = "texture_diffuse";
+
     //Load Models
     MeshLoaderObj loader;
     Mesh sun = loader.loadObj("Resources/Models/sphere.obj", textures3);
@@ -193,6 +226,10 @@ int main()
     Mesh hammock = loader.loadObj("Resources/Models/hammond.obj", hammockTexture);
     Mesh hammockTrees = loader.loadObj("Resources/Models/cocotierul_vincent.obj", hammockWoodTexture);
     Mesh fishingRod = loader.loadObj("Resources/Models/fishingRod.obj", fishingRodTextures);
+    Mesh cabin = loader.loadObj("Resources/Models/cabin.obj", cabinTexture);
+    Mesh cabinFoundation = loader.loadObj("Resources/Models/foundation.obj", cabinFoundationTexture);
+    Mesh cabinRoof = loader.loadObj("Resources/Models/roof.obj", cabinRoofTexture);
+    Mesh cabinDoor = loader.loadObj("Resources/Models/door.obj", cabinDoorTexture);
 
     //Fish data
     std::vector<FishData> schoolOfFish;
@@ -443,6 +480,63 @@ int main()
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &TreeMatrix[0][0]);
         hammockTrees.draw(shader);
 
+        //Draw cabin
+
+        // positions
+        glm::mat4 CabinMatrix = glm::mat4(1.0f);
+        CabinMatrix = glm::translate(CabinMatrix, glm::vec3(205.0f, -20.0f, -70.0f));
+        CabinMatrix = glm::scale(CabinMatrix, glm::vec3(4.0f, 4.0f, 4.0f));
+        CabinMatrix = glm::rotate(CabinMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        glm::mat4 CabinMVP = ProjectionMatrix * ViewMatrix * CabinMatrix;
+
+        // foundation
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &CabinMVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &CabinMatrix[0][0]);
+        cabinFoundation.draw(shader);
+
+        // body
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &CabinMVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &CabinMatrix[0][0]);
+        cabin.draw(shader);
+
+        // roof
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &CabinMVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &CabinMatrix[0][0]);
+        cabinRoof.draw(shader);
+
+        // door
+        //animation
+        float slideWidth = 1.2f;
+        float targetSlide = isDoorOpen ? slideWidth : 0.0f;
+        float slideSpeed = 2.0f * deltaTime;
+        static float currentDoorSlide = 0.0f;
+
+        if (currentDoorSlide < targetSlide) {
+            currentDoorSlide += slideSpeed;
+            if (currentDoorSlide > targetSlide) currentDoorSlide = targetSlide;
+        }
+        else if (currentDoorSlide > targetSlide) {
+            currentDoorSlide -= slideSpeed;
+            if (currentDoorSlide < targetSlide) currentDoorSlide = targetSlide;
+        }
+
+        glm::mat4 LocalDoor = glm::mat4(1.0f);
+
+        LocalDoor = glm::translate(LocalDoor, glm::vec3(0.0f, 0.0f, currentDoorSlide));
+
+        float fixAngle = 0.0f;
+        LocalDoor = glm::rotate(LocalDoor, glm::radians(fixAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        LocalDoor = glm::translate(LocalDoor, glm::vec3(-0.6f, 0.0f, 1.35f));
+
+        glm::mat4 DoorMatrix = CabinMatrix * LocalDoor;
+
+        // draw door
+        glm::mat4 DoorMVP = ProjectionMatrix * ViewMatrix * DoorMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &DoorMVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &DoorMatrix[0][0]);
+        cabinDoor.draw(shader);
 
         // Draw sun
         sunShader.use();
@@ -453,6 +547,40 @@ int main()
 
         mySkybox.draw(skyboxShader, ViewMatrix, ProjectionMatrix);
 
+        shader.use();
+
+        if (!isMenuOpen) {
+            glm::mat4 MarkerMatrix = glm::mat4(1.0f);
+            MarkerMatrix = glm::translate(MarkerMatrix, interactionPoint);
+            MarkerMatrix = glm::scale(MarkerMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
+
+            glm::mat4 MarkerMVP = ProjectionMatrix * ViewMatrix * MarkerMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MarkerMVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &MarkerMatrix[0][0]);
+            sun.draw(shader);
+        }
+
+        // menu window
+        if (extraWindow != nullptr) {
+
+            if (glfwWindowShouldClose(extraWindow)) {
+                glfwDestroyWindow(extraWindow);
+                extraWindow = nullptr;
+                isMenuOpen = false;
+            }
+            else {
+                glfwMakeContextCurrent(extraWindow);
+
+                glViewport(0, 0, 400, 300);
+                glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                glfwSwapBuffers(extraWindow);
+
+                glfwMakeContextCurrent(window.getWindow());
+                glViewport(0, 0, window.getWidth(), window.getHeight());
+            }
+        }
         window.update();
     }
 }
@@ -479,23 +607,48 @@ void processKeyboardInput()
     if (window.isPressed(GLFW_KEY_D))
         catPosition.x += catSpeed;
 
-    // E = Interact (Pick up/Drop fishing rod)    
+    // E = Interact (Pick up/Drop fishing rod/door/menu)    
     if (window.isPressed(GLFW_KEY_E))
     {
         if (!eKeyPressedLastFrame)
         {
+            // 1. Calculate distances
+            float distToRod = glm::length(catPosition - rodWorldPos);
+            float distToDoor = glm::length(catPosition - cabinPos); // Simple check to center of house
 
-            float distance = glm::length(catPosition - rodWorldPos);
+            //menu interact distance
+            float distToInteraction = glm::length(catPosition - interactionPoint);
 
-            if (!hasFishingRod && distance < 50.0f) {
-                hasFishingRod = true;
-                std::cout << "Rod Picked Up!" << std::endl;
+            // 2. Logic: Prioritize closest object
+            if (distToRod < 30.0f) // Close to rod
+            {
+                if (!hasFishingRod) {
+                    hasFishingRod = true;
+                    std::cout << "Rod Picked Up!" << std::endl;
+                }
+                else {
+                    hasFishingRod = false;
+                    rodWorldPos = catPosition;
+                    rodWorldPos.y = -20.0f; // Drop on ground
+                }
             }
-            else if (hasFishingRod) {
-                hasFishingRod = false;
-                rodWorldPos = catPosition;
-                rodWorldPos.y = -20.0f;
+            else if (distToInteraction < interactionRadius)
+            {
+                if (extraWindow == nullptr) {
+                    extraWindow = glfwCreateWindow(400, 300, "Interaction Menu", NULL, window.getWindow());
+                    std::cout << "Menu Window Opened!" << std::endl;
+                    isMenuOpen = true;
+                }
+                else {
+                    glfwSetWindowShouldClose(extraWindow, true);
+                }
             }
+            else if (distToDoor < 40.0f)
+            {
+                isDoorOpen = !isDoorOpen; // Toggle state
+                std::cout << "Door Toggled!" << std::endl;
+            }
+
             eKeyPressedLastFrame = true;
         }
     }
