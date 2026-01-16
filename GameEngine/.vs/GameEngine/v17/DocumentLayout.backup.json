@@ -1,50 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\",
+  "WorkspaceRootPath": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\water_vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\water_vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Camera\\camera.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\river_vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\river_vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\river_fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\river_fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\water_fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\water_fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Camera\\camera.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\sun_vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\sun_vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\sun_fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\sun_fragment_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Shaders\\vertex_shader.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -58,137 +26,42 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "water_vertex_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\water_vertex_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\water_vertex_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\water_vertex_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\water_vertex_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC0AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T18:22:54.026Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\main.cpp",
+              "DocumentMoniker": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\main.cpp",
               "RelativeDocumentMoniker": "GameEngine\\main.cpp",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\main.cpp*",
-              "RelativeToolTip": "GameEngine\\main.cpp*",
-              "ViewState": "AgIAABkBAAAAAAAAAAAAADMBAAAJAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\main.cpp",
+              "RelativeToolTip": "GameEngine\\main.cpp",
+              "ViewState": "AgIAAEwCAAAAAAAAAAAYwGICAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-01-10T18:16:32.817Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "camera.cpp",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.cpp",
+              "DocumentMoniker": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.cpp",
               "RelativeDocumentMoniker": "GameEngine\\Camera\\camera.cpp",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.cpp",
+              "ToolTip": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.cpp",
               "RelativeToolTip": "GameEngine\\Camera\\camera.cpp",
-              "ViewState": "AgIAAD8AAAAAAAAAAAAcwFIAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAFIAAAAAAAAAAAAYwGUAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-01-10T18:17:42.241Z"
+              "WhenOpened": "2026-01-10T18:17:42.241Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "water_fragment_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\water_fragment_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\water_fragment_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\water_fragment_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\water_fragment_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T18:22:52.608Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "river_fragment_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\river_fragment_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\river_fragment_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\river_fragment_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\river_fragment_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T20:39:08.731Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "river_vertex_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\river_vertex_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\river_vertex_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\river_vertex_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\river_vertex_shader.glsl",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAABcAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T20:39:26.98Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "fragment_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\fragment_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\fragment_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\fragment_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\fragment_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T19:26:53.75Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "sun_fragment_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\sun_fragment_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\sun_fragment_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\sun_fragment_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\sun_fragment_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T18:45:45.083Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "vertex_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\vertex_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\vertex_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\vertex_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\vertex_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T19:26:58.559Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 1,
               "Title": "camera.h",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.h",
+              "DocumentMoniker": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.h",
               "RelativeDocumentMoniker": "GameEngine\\Camera\\camera.h",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.h",
+              "ToolTip": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Camera\\camera.h",
               "RelativeToolTip": "GameEngine\\Camera\\camera.h",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAB8AAAAsAAAAAAAAAA==",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAACgAAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2026-01-12T12:31:33.801Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "sun_vertex_shader.glsl",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\sun_vertex_shader.glsl",
-              "RelativeDocumentMoniker": "GameEngine\\Shaders\\sun_vertex_shader.glsl",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Shaders\\sun_vertex_shader.glsl",
-              "RelativeToolTip": "GameEngine\\Shaders\\sun_vertex_shader.glsl",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-01-10T18:45:46.789Z"
+              "WhenOpened": "2026-01-12T12:31:33.801Z",
+              "EditorCaption": ""
             }
           ]
         }

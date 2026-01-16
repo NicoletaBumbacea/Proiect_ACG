@@ -11,7 +11,7 @@
 #include <vector>
 
 void processKeyboardInput();
-Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex); 
+Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex);
 Mesh generateCircularRiver(float radius, float width, int segments, std::vector<Texture> tex);
 
 float deltaTime = 0.0f;
@@ -23,20 +23,20 @@ Camera camera;
 // Fish structure
 struct FishData {
     glm::vec3 position;
-    glm::vec3 target;   
+    glm::vec3 target;
     float speed;
 };
 
 glm::vec3 getRandomRiverPoint() {
- 
+
     glm::vec3 center = glm::vec3(-120.0f, -18.6f, -85.0f);
-    float minRadius = 15.0f; 
-    float maxRadius = 90.0f; 
+    float minRadius = 15.0f;
+    float maxRadius = 90.0f;
     float angle = (rand() % 360) * (3.14159f / 180.0f);
     float radius = minRadius + (rand() % (int)(maxRadius - minRadius));
     float x = center.x + cos(angle) * radius;
     float z = center.z + sin(angle) * radius;
-    float y = center.y - 2.0f; 
+    float y = center.y - 2.0f;
 
     return glm::vec3(x, y, z);
 }
@@ -49,7 +49,7 @@ glm::vec3 getRandomOceanPoint() {
     float radius = minRadius + (rand() % (int)(maxRadius - minRadius));
     float x = center.x + cos(angle) * radius;
     float z = center.z + sin(angle) * radius;
-    float y = center.y - 2.0f; 
+    float y = center.y - 2.0f;
 
     return glm::vec3(x, y, z);
 }
@@ -57,8 +57,13 @@ glm::vec3 getRandomOceanPoint() {
 glm::vec3 lightColor = glm::vec3(1.0f);
 glm::vec3 lightPos = glm::vec3(-180.0f, 100.0f, -200.0f);
 
-glm::vec3 catPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 catPosition = glm::vec3(0.0f, -10.0f, 0.0f);
 float catRotationY = 180.0f;
+
+
+bool hasFishingRod = false;
+bool eKeyPressedLastFrame = false;
+glm::vec3 rodWorldPos = glm::vec3(190.0f, -20.0f, -195.0f);
 
 int main()
 {
@@ -89,7 +94,7 @@ int main()
     GLuint fishingRodTex = loadBMP("Resources/Textures/fishingRod.bmp");
 
 
-   
+
     glBindTexture(GL_TEXTURE_2D, skyTexID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -156,14 +161,14 @@ int main()
     fishingRodTextures[0].id = fishingRodTex;
     fishingRodTextures[0].type = "texture_diffuse";
 
-   
+
     //Load Models
     MeshLoaderObj loader;
-    Mesh sun = loader.loadObj("Resources/Models/sphere.obj",textures3);
+    Mesh sun = loader.loadObj("Resources/Models/sphere.obj", textures3);
     Mesh plane = loader.loadObj("Resources/Models/plane.obj", textures5);
     Mesh cat = loader.loadObj("Resources/Models/cat.obj", textures4);
     Mesh skySphere = loader.loadObj("Resources/Models/sphere.obj", skyTextures);
-    Mesh waterMesh = generateWaterGrid(120, 1.0f,textures2);
+    Mesh waterMesh = generateWaterGrid(120, 1.0f, textures2);
     Mesh riverMesh = generateCircularRiver(50.0f, 100.0f, 100, textures2);
     Mesh boat = loader.loadObj("Resources/Models/boat.obj", boatTextures);
     Mesh reed = loader.loadObj("Resources/Models/reed.obj", reedTextures);
@@ -171,8 +176,8 @@ int main()
     Mesh fish = loader.loadObj("Resources/Models/fih.obj", fishTextures);
     Mesh hammock = loader.loadObj("Resources/Models/hammond.obj", hammockTexture);
     Mesh hammockTrees = loader.loadObj("Resources/Models/cocotierul_vincent.obj", hammockWoodTexture);
-    Mesh fishingRod = loader.loadObj("Resources/Models/fishingRod.obj",fishingRodTextures);
-   
+    Mesh fishingRod = loader.loadObj("Resources/Models/fishingRod.obj", fishingRodTextures);
+
 
 
     //Fish data
@@ -180,9 +185,9 @@ int main()
     // Create 5 random fish
     for (int i = 0; i < 5; i++) {
         FishData fish;
-        fish.position = getRandomRiverPoint(); 
-        fish.target = getRandomRiverPoint();   
-        fish.speed = 10.0f + (rand() % 10);  
+        fish.position = getRandomRiverPoint();
+        fish.target = getRandomRiverPoint();
+        fish.speed = 10.0f + (rand() % 10);
         schoolOfFish.push_back(fish);
     }
 
@@ -191,7 +196,7 @@ int main()
         FishData fish;
         fish.position = getRandomOceanPoint();
         fish.target = getRandomOceanPoint();
-        fish.speed = 8.0f + (rand() % 5);    
+        fish.speed = 8.0f + (rand() % 5);
         schoolOfOceanFish.push_back(fish);
     }
 
@@ -209,13 +214,17 @@ int main()
         glm::vec3 cameraOffset = glm::vec3(0.0f, 15.0f, 30.0f);
         camera.setCameraPosition(catPosition + cameraOffset);
 
-        // Tracker Logic
+        // Tracker Logic 
         titleUpdateTimer += deltaTime;
-        if (titleUpdateTimer > 0.2f) {
+        if (titleUpdateTimer > 0.1f) {
             glm::vec3 pos = camera.getCameraPosition();
+            float distToRod = glm::length(catPosition - rodWorldPos);
             std::stringstream ss;
-            ss << std::fixed << std::setprecision(2);
-            ss << "Cat Game 3D | Coordinates: X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z;
+            ss << std::fixed << std::setprecision(1);
+            ss << "Pos: " << (int)pos.x << "," << (int)pos.z
+                << " | Rod Dist: " << distToRod
+                << " | Holding: " << (hasFishingRod ? "YES" : "NO");
+
             glfwSetWindowTitle(window.getWindow(), ss.str().c_str());
             titleUpdateTimer = 0.0f;
         }
@@ -259,7 +268,7 @@ int main()
         glUniform3f(glGetUniformLocation(riverShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
         riverMesh.draw(riverShader);
 
-    
+
         shader.use();
 
         glUniform3f(glGetUniformLocation(shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
@@ -280,18 +289,40 @@ int main()
 
         //Draw boat
         ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(-28.0f, -20.0f, -56.0f));
-        float boatScale =0.1f;
+        float boatScale = 0.1f;
         ModelMatrix = glm::scale(ModelMatrix, glm::vec3(boatScale, boatScale, boatScale));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         boat.draw(shader);
 
-		//Draw fishing rod
-        glm::vec3 rodPos = glm::vec3(190.0f, -20.0f, -195.0f);
+        //Draw fishing rod
+        /*glm::vec3 rodPos = glm::vec3(190.0f, -20.0f, -195.0f);
         ModelMatrix = glm::translate(glm::mat4(1.0), rodPos);
         ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
          float fishingRodScale = 1.5f;
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        fishingRod.draw(shader);*/
+
+        //Draw rod
+        ModelMatrix = glm::mat4(1.0);
+
+        if (hasFishingRod)
+        { //Rod attached to the cat
+            ModelMatrix = glm::translate(ModelMatrix, catPosition);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(1.0f, 10.0f, 1.5f));
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -10.0f, -5.0f));
+        }
+        else
+        { //Rod on the ground
+            ModelMatrix = glm::translate(ModelMatrix, rodWorldPos);
+            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
+        }
+
+        float fishingRodScale = 1.5f;
         ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
@@ -333,14 +364,14 @@ int main()
             tree.draw(shader);
         }
 
-         // Draw fih 
+        // Draw fih 
         for (unsigned int i = 0; i < schoolOfFish.size(); i++)
         {
             glm::vec3 direction = schoolOfFish[i].target - schoolOfFish[i].position;
             float distance = glm::length(direction);
 
             if (distance < 1.0f) {
-            
+
                 schoolOfFish[i].target = getRandomRiverPoint();
             }
             else {
@@ -362,9 +393,10 @@ int main()
             fish.draw(shader);
         }
 
-		// Draw ocean fish
+        // Draw ocean fish
         for (unsigned int i = 0; i < schoolOfOceanFish.size(); i++)
-        {   glm::vec3 direction = schoolOfOceanFish[i].target - schoolOfOceanFish[i].position;
+        {
+            glm::vec3 direction = schoolOfOceanFish[i].target - schoolOfOceanFish[i].position;
             float distance = glm::length(direction);
             if (distance < 1.0f) {
                 schoolOfOceanFish[i].target = getRandomOceanPoint();
@@ -385,7 +417,7 @@ int main()
             fish.draw(shader);
         }
 
-     
+
         // Draw cat
         ModelMatrix = glm::mat4(1.0);
         ModelMatrix = glm::translate(ModelMatrix, catPosition);
@@ -403,7 +435,7 @@ int main()
         BaseMatrix = glm::scale(BaseMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
         BaseMatrix = glm::rotate(BaseMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-         // hammock bed
+        // hammock bed
         MVP = ProjectionMatrix * ViewMatrix * BaseMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &BaseMatrix[0][0]);
@@ -417,7 +449,7 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &TreeMatrix[0][0]);
         hammockTrees.draw(shader);
-       
+
 
         // Draw sun
         sunShader.use();
@@ -425,7 +457,7 @@ int main()
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(glGetUniformLocation(sunShader.getId(), "MVP"), 1, GL_FALSE, &MVP[0][0]);
         sun.draw(sunShader);
-		
+
         window.update();
     }
 }
@@ -452,6 +484,30 @@ void processKeyboardInput()
     if (window.isPressed(GLFW_KEY_D))
         catPosition.x += catSpeed;
 
+    // E = Interact (Pick up/Drop fishing rod)    
+    if (window.isPressed(GLFW_KEY_E))
+    {
+        if (!eKeyPressedLastFrame)
+        {
+
+            float distance = glm::length(catPosition - rodWorldPos);
+
+            if (!hasFishingRod && distance < 50.0f) {
+                hasFishingRod = true;
+                std::cout << "Rod Picked Up!" << std::endl;
+            }
+            else if (hasFishingRod) {
+                hasFishingRod = false;
+                rodWorldPos = catPosition;
+                rodWorldPos.y = -20.0f;
+            }
+            eKeyPressedLastFrame = true;
+        }
+    }
+    else {
+        eKeyPressedLastFrame = false;
+    }
+
     //Camera Rotation 
     if (window.isPressed(GLFW_KEY_LEFT)) camera.rotateOy(cameraRotationSpeed);
     if (window.isPressed(GLFW_KEY_RIGHT)) camera.rotateOy(-cameraRotationSpeed);
@@ -461,20 +517,20 @@ void processKeyboardInput()
 }
 
 //Helper function to create the high-poly water
-Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex )
+Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex)
 {
     std::vector<Vertex> vertices;
     std::vector<int> indices;
-    std::vector<Texture> textures2=tex;
+    std::vector<Texture> textures2 = tex;
 
-    float offset = (size * spacing) / 2.0f; 
+    float offset = (size * spacing) / 2.0f;
 
     //Generate vertices
     for (int z = 0; z <= size; ++z) {
         for (int x = 0; x <= size; ++x) {
             Vertex v;
             v.pos.x = (x * spacing) - offset;
-            v.pos.y = 0.0f; 
+            v.pos.y = 0.0f;
             v.pos.z = (z * spacing) - offset;
 
             v.normals = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -517,7 +573,7 @@ Mesh generateCircularRiver(float radius, float width, int segments, std::vector<
 
     float innerRadius = radius - (width / 2.0f);
 
-    int widthSegments = 18; 
+    int widthSegments = 18;
 
     for (int i = 0; i <= segments; ++i) {
         float theta = (float)i / segments * 2.0f * 3.1415926f;

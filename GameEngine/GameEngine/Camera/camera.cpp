@@ -12,9 +12,9 @@ Camera::Camera(glm::vec3 cameraPosition)
 
 Camera::Camera()
 {
-	this ->cameraPosition = glm::vec3(0.0f, 0.0f, 100.0f);
-	this ->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-	this ->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->cameraPosition = glm::vec3(0.0f, 0.0f, 100.0f);
+	this->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+	this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->cameraRight = glm::cross(cameraViewDirection, cameraUp);
 	this->rotationOx = 0.0f;
 	this->rotationOy = -90.0f;
@@ -63,13 +63,13 @@ void Camera::keyboardMoveDown(float cameraSpeed)
 }
 
 void Camera::rotateOx(float angle)
-{	
+{
 	cameraViewDirection = glm::normalize(glm::vec3((glm::rotate(glm::mat4(1.0f), angle, cameraRight) * glm::vec4(cameraViewDirection, 1))));
 	cameraUp = glm::normalize(glm::cross(cameraRight, cameraViewDirection));
 	cameraRight = glm::cross(cameraViewDirection, cameraUp);
 }
 
-void Camera::rotateOy (float angle)
+void Camera::rotateOy(float angle)
 {
 	glm::vec3 globalUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	cameraViewDirection = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.0f), angle, globalUp) * glm::vec4(cameraViewDirection, 1.0f)));
@@ -101,5 +101,3 @@ glm::vec3 Camera::getCameraUp()
 {
 	return cameraUp;
 }
-
-
