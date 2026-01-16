@@ -133,11 +133,15 @@
     <ClInclude Include="Model Loading\stringTokenizer.h" />
     <ClInclude Include="Shaders\shader.h" />
     <ClInclude Include="Model Loading\texture.h" />
+    <ClInclude Include="SkyBox.h" />
+    <ClInclude Include="stb\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\fragment_shader.glsl" />
     <None Include="Shaders\river_fragment_shader.glsl" />
     <None Include="Shaders\river_vertex_shader.glsl" />
+    <None Include="Shaders\skybox_fragment.glsl" />
+    <None Include="Shaders\skybox_vertex.glsl" />
     <None Include="Shaders\sun_fragment_shader.glsl" />
     <None Include="Shaders\sun_vertex_shader.glsl" />
     <None Include="Shaders\vertex_shader.glsl" />

@@ -59,6 +59,12 @@
     <ClInclude Include="Model Loading\stringTokenizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SkyBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\vertex_shader.glsl" />
@@ -69,6 +75,8 @@
     <None Include="Shaders\water_fragment_shader.glsl" />
     <None Include="Shaders\river_fragment_shader.glsl" />
     <None Include="Shaders\river_vertex_shader.glsl" />
+    <None Include="Shaders\skybox_vertex.glsl" />
+    <None Include="Shaders\skybox_fragment.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\wood.bmp">

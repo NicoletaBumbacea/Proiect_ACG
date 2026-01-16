@@ -1,3 +1,4 @@
+
 #include "Graphics\window.h"
 #include "Camera\camera.h"
 #include "Shaders\shader.h"
@@ -9,6 +10,9 @@
 #include <sstream> 
 #include <iomanip> 
 #include <vector>
+#include "SkyBox.h" 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb\stb_image.h"
 
 void processKeyboardInput();
 Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex);
@@ -77,6 +81,23 @@ int main()
     Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     Shader waterShader("Shaders/water_vertex_shader.glsl", "Shaders/water_fragment_shader.glsl");
     Shader riverShader("Shaders/river_vertex_shader.glsl", "Shaders/river_fragment_shader.glsl");
+    Shader skyboxShader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
+
+    //Skybox
+    Skybox mySkybox;
+    mySkybox.setup();
+
+    std::vector<std::string> faces = {
+        "Resources/Textures/Skybox/px.png",
+        "Resources/Textures/Skybox/nx.png",
+        "Resources/Textures/Skybox/py.png",
+        "Resources/Textures/Skybox/nx.png",
+        "Resources/Textures/Skybox/nz.png",
+        "Resources/Textures/Skybox/pz.png"
+    };
+    mySkybox.textureID = mySkybox.loadCubemap(faces);
+    skyboxShader.use();
+    glUniform1i(glGetUniformLocation(skyboxShader.getId(), "skybox"), 0);
 
     // Load Textures
     GLuint tex = loadBMP("Resources/Textures/wood.bmp");
@@ -93,9 +114,6 @@ int main()
     GLuint hammockTreeTex = loadBMP("Resources/Textures/hammockTree_tex.bmp");
     GLuint fishingRodTex = loadBMP("Resources/Textures/fishingRod.bmp");
 
-
-
-    glBindTexture(GL_TEXTURE_2D, skyTexID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -161,13 +179,11 @@ int main()
     fishingRodTextures[0].id = fishingRodTex;
     fishingRodTextures[0].type = "texture_diffuse";
 
-
     //Load Models
     MeshLoaderObj loader;
     Mesh sun = loader.loadObj("Resources/Models/sphere.obj", textures3);
     Mesh plane = loader.loadObj("Resources/Models/plane.obj", textures5);
     Mesh cat = loader.loadObj("Resources/Models/cat.obj", textures4);
-    Mesh skySphere = loader.loadObj("Resources/Models/sphere.obj", skyTextures);
     Mesh waterMesh = generateWaterGrid(120, 1.0f, textures2);
     Mesh riverMesh = generateCircularRiver(50.0f, 100.0f, 100, textures2);
     Mesh boat = loader.loadObj("Resources/Models/boat.obj", boatTextures);
@@ -177,8 +193,6 @@ int main()
     Mesh hammock = loader.loadObj("Resources/Models/hammond.obj", hammockTexture);
     Mesh hammockTrees = loader.loadObj("Resources/Models/cocotierul_vincent.obj", hammockWoodTexture);
     Mesh fishingRod = loader.loadObj("Resources/Models/fishingRod.obj", fishingRodTextures);
-
-
 
     //Fish data
     std::vector<FishData> schoolOfFish;
@@ -234,16 +248,6 @@ int main()
         glm::mat4 ViewMatrix = glm::lookAt(camera.getCameraPosition(), camera.getCameraPosition() + camera.getCameraViewDirection(), camera.getCameraUp());
 
 
-        //Draw sky 
-        sunShader.use();
-        glDisable(GL_CULL_FACE);
-        glm::mat4 SkyModel = glm::translate(glm::mat4(1.0), camera.getCameraPosition());
-        SkyModel = glm::scale(SkyModel, glm::vec3(500.0f, 500.0f, 500.0f));
-        glm::mat4 SkyMVP = ProjectionMatrix * ViewMatrix * SkyModel;
-        glUniformMatrix4fv(glGetUniformLocation(sunShader.getId(), "MVP"), 1, GL_FALSE, &SkyMVP[0][0]);
-        skySphere.draw(sunShader);
-        glEnable(GL_CULL_FACE);
-
         //Draw water
         waterShader.use();
         glm::vec3 waterPosition = glm::vec3(200.0f, -20.0f, 120.0f);
@@ -295,17 +299,6 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         boat.draw(shader);
-
-        //Draw fishing rod
-        /*glm::vec3 rodPos = glm::vec3(190.0f, -20.0f, -195.0f);
-        ModelMatrix = glm::translate(glm::mat4(1.0), rodPos);
-        ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-         float fishingRodScale = 1.5f;
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
-        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-        fishingRod.draw(shader);*/
 
         //Draw rod
         ModelMatrix = glm::mat4(1.0);
@@ -457,6 +450,8 @@ int main()
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(glGetUniformLocation(sunShader.getId(), "MVP"), 1, GL_FALSE, &MVP[0][0]);
         sun.draw(sunShader);
+
+        mySkybox.draw(skyboxShader, ViewMatrix, ProjectionMatrix);
 
         window.update();
     }
