@@ -41,6 +41,18 @@ glm::vec3 getRandomRiverPoint() {
     return glm::vec3(x, y, z);
 }
 
+glm::vec3 getRandomOceanPoint() {
+    glm::vec3 center = glm::vec3(200.0f, -18.60f, 120.0f);
+    float minRadius = 10.0f;
+    float maxRadius = 65.0f;
+    float angle = (rand() % 360) * (3.14159f / 180.0f);
+    float radius = minRadius + (rand() % (int)(maxRadius - minRadius));
+    float x = center.x + cos(angle) * radius;
+    float z = center.z + sin(angle) * radius;
+    float y = center.y - 2.0f; 
+
+    return glm::vec3(x, y, z);
+}
 
 glm::vec3 lightColor = glm::vec3(1.0f);
 glm::vec3 lightPos = glm::vec3(-180.0f, 100.0f, -200.0f);
@@ -74,6 +86,7 @@ int main()
     GLuint fishTexID = loadBMP("Resources/Textures/fih.bmp");
     GLuint hammockTex = loadBMP("Resources/Textures/hammock_tex.bmp");
     GLuint hammockTreeTex = loadBMP("Resources/Textures/hammockTree_tex.bmp");
+    GLuint fishingRodTex = loadBMP("Resources/Textures/fishingRod.bmp");
 
 
    
@@ -138,6 +151,11 @@ int main()
     hammockWoodTexture[0].id = hammockTreeTex;
     hammockWoodTexture[0].type = "texture_diffuse";
 
+    std::vector<Texture> fishingRodTextures;
+    fishingRodTextures.push_back(Texture());
+    fishingRodTextures[0].id = fishingRodTex;
+    fishingRodTextures[0].type = "texture_diffuse";
+
    
     //Load Models
     MeshLoaderObj loader;
@@ -146,13 +164,15 @@ int main()
     Mesh cat = loader.loadObj("Resources/Models/cat.obj", textures4);
     Mesh skySphere = loader.loadObj("Resources/Models/sphere.obj", skyTextures);
     Mesh waterMesh = generateWaterGrid(120, 1.0f,textures2);
-    Mesh riverMesh = generateCircularRiver(50, 100, 1.0f, textures2);
+    Mesh riverMesh = generateCircularRiver(50.0f, 100.0f, 100, textures2);
     Mesh boat = loader.loadObj("Resources/Models/boat.obj", boatTextures);
     Mesh reed = loader.loadObj("Resources/Models/reed.obj", reedTextures);
     Mesh tree = loader.loadObj("Resources/Models/bigtree.obj", treeTextures);
     Mesh fish = loader.loadObj("Resources/Models/fih.obj", fishTextures);
     Mesh hammock = loader.loadObj("Resources/Models/hammond.obj", hammockTexture);
     Mesh hammockTrees = loader.loadObj("Resources/Models/cocotierul_vincent.obj", hammockWoodTexture);
+    Mesh fishingRod = loader.loadObj("Resources/Models/fishingRod.obj",fishingRodTextures);
+   
 
 
     //Fish data
@@ -164,6 +184,15 @@ int main()
         fish.target = getRandomRiverPoint();   
         fish.speed = 10.0f + (rand() % 10);  
         schoolOfFish.push_back(fish);
+    }
+
+    std::vector<FishData> schoolOfOceanFish;
+    for (int i = 0; i < 10; i++) {
+        FishData fish;
+        fish.position = getRandomOceanPoint();
+        fish.target = getRandomOceanPoint();
+        fish.speed = 8.0f + (rand() % 5);    
+        schoolOfOceanFish.push_back(fish);
     }
 
     float titleUpdateTimer = 0.0f;
@@ -219,7 +248,6 @@ int main()
         waterMesh.draw(waterShader);
 
         //Draw river
-        Mesh riverMesh = generateCircularRiver(50.0f, 100.0f, 100, textures2);
         riverShader.use();
         glm::vec3 riverPos = glm::vec3(-120.0f, -19.5f, -85.0f);
         glm::mat4 RiverModel = glm::translate(glm::mat4(1.0), riverPos);
@@ -258,6 +286,17 @@ int main()
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
         boat.draw(shader);
+
+		//Draw fishing rod
+        glm::vec3 rodPos = glm::vec3(190.0f, -20.0f, -195.0f);
+        ModelMatrix = glm::translate(glm::mat4(1.0), rodPos);
+        ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+         float fishingRodScale = 1.5f;
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        fishingRod.draw(shader);
 
         // Draw reeds
         std::vector<glm::vec3> reedPositions = {
@@ -323,6 +362,30 @@ int main()
             fish.draw(shader);
         }
 
+		// Draw ocean fish
+        for (unsigned int i = 0; i < schoolOfOceanFish.size(); i++)
+        {   glm::vec3 direction = schoolOfOceanFish[i].target - schoolOfOceanFish[i].position;
+            float distance = glm::length(direction);
+            if (distance < 1.0f) {
+                schoolOfOceanFish[i].target = getRandomOceanPoint();
+            }
+            else {
+                glm::vec3 moveDir = glm::normalize(direction);
+                schoolOfOceanFish[i].position += moveDir * schoolOfOceanFish[i].speed * deltaTime;
+            }
+            ModelMatrix = glm::mat4(1.0);
+            ModelMatrix = glm::translate(ModelMatrix, schoolOfOceanFish[i].position);
+            float angle = atan2(direction.x, direction.z);
+            ModelMatrix = glm::rotate(ModelMatrix, angle + 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+            float fishScale = 3.0f;
+            ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishScale, fishScale, fishScale));
+            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+            fish.draw(shader);
+        }
+
+     
         // Draw cat
         ModelMatrix = glm::mat4(1.0);
         ModelMatrix = glm::translate(ModelMatrix, catPosition);
@@ -340,13 +403,13 @@ int main()
         BaseMatrix = glm::scale(BaseMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
         BaseMatrix = glm::rotate(BaseMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-            // hammock bed
+         // hammock bed
         MVP = ProjectionMatrix * ViewMatrix * BaseMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
         glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &BaseMatrix[0][0]);
         hammock.draw(shader);
 
-            // positioned hammock tree
+        // positioned hammock tree
         float treeOffsetZ = -4.5f;
         float treeOffsetX = 0.4f;
         glm::mat4 TreeMatrix = glm::translate(BaseMatrix, glm::vec3(treeOffsetX, 0.0f, treeOffsetZ));
