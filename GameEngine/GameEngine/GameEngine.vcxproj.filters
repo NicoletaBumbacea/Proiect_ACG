@@ -122,6 +122,7 @@
     <None Include="Shaders\river_vertex_shader.glsl" />
     <None Include="Shaders\skybox_vertex.glsl" />
     <None Include="Shaders\skybox_fragment.glsl" />
+    <None Include="imgui.ini" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\wood.bmp">

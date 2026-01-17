@@ -13,7 +13,6 @@
 #include "SkyBox.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb\stb_image.h"
-
 #include "imgui\imgui.h"
 #include "imgui\imgui_impl_glfw.h"
 #include "imgui\imgui_impl_opengl3.h"
@@ -141,7 +140,8 @@ int main()
 	colors[ImGuiCol_Button] = ImVec4(0.2f, 0.5f, 0.2f, 1.0f);
 	colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.7f, 0.3f, 1.0f);
 	colors[ImGuiCol_ButtonActive] = ImVec4(0.1f, 0.4f, 0.1f, 1.0f);
-	colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   
+	colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); 
+	ImGui_ImplGlfw_InitForOpenGL(window.getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 	// Load Shaders
@@ -184,6 +184,7 @@ int main()
 	GLuint cabinRoofTex = loadBMP("Resources/Textures/darkwood.bmp");
 	GLuint cabinFoundationTex = loadBMP("Resources/Textures/rock_cabin.bmp");
 	GLuint cabinDoorTex = loadBMP("Resources/Textures/brightwood.bmp");
+	GLuint frogTex = loadBMP("Resources/Textures/masterfrog.bmp");
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -205,6 +206,8 @@ int main()
 	std::vector<Texture> cabinFoundationTexture; cabinFoundationTexture.push_back({ cabinFoundationTex, "texture_diffuse" });
 	std::vector<Texture> cabinRoofTexture; cabinRoofTexture.push_back({ cabinRoofTex, "texture_diffuse" });
 	std::vector<Texture> cabinDoorTexture; cabinDoorTexture.push_back({ cabinDoorTex, "texture_diffuse" });
+	std::vector<Texture> frogTexture; frogTexture.push_back({ frogTex, "texture_diffuse" });
+
 
 	// Load models
 	MeshLoaderObj loader;
@@ -224,6 +227,7 @@ int main()
 	Mesh cabinFoundation = loader.loadObj("Resources/Models/foundation.obj", cabinFoundationTexture);
 	Mesh cabinRoof = loader.loadObj("Resources/Models/roof.obj", cabinRoofTexture);
 	Mesh cabinDoor = loader.loadObj("Resources/Models/door.obj", cabinDoorTexture);
+	Mesh frog = loader.loadObj("Resources/Models/masterfrog.obj", frogTexture);
 
 
 	std::vector<FishData> schoolOfFish;
@@ -330,6 +334,16 @@ int main()
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		plane.draw(shader);
 
+
+		// Draw masterfrog
+		 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, -20.0f, -50.0f));
+		float frogScale = 40.0f;
+		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(frogScale, frogScale, frogScale));
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		frog.draw(shader);
+
 		// Draw boat
 		ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(-28.0f, -20.0f, -56.0f));
 		float boatScale = 0.1f;
@@ -351,7 +365,13 @@ int main()
 		else {
 			// On ground
 			ModelMatrix = glm::translate(ModelMatrix, rodWorldPos);
-			ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
+			float spinSpeed = 50.0f; 
+			float spinAngle = (float)glfwGetTime() * spinSpeed;
+			ModelMatrix = glm::rotate(ModelMatrix, (spinAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+			float floatHeight = sin((float)glfwGetTime() * 2.0f) * 1.0f;
+			ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, floatHeight + 3.0f, 0.0f));
+			ModelMatrix = glm::rotate(ModelMatrix, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
 		}
 		float fishingRodScale = 1.5f;
 		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
@@ -624,7 +644,6 @@ void processKeyboardInput()
 			else if (distToDoor < 40.0f) {
 				isDoorOpen = !isDoorOpen;
 			}
-
 			eKeyPressedLastFrame = true;
 		}
 	}
