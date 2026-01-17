@@ -1,9 +1,11 @@
-﻿  main.cpp
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(86,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(87,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(91,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(92,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(93,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(94,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(215,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  GameEngine.vcxproj -> C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\Debug\GameEngine.exe
+﻿  camera.cpp
+  main.cpp
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(98,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(99,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(103,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(104,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(105,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(106,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp(226,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  GameEngine.vcxproj -> C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\Debug\GameEngine.exe

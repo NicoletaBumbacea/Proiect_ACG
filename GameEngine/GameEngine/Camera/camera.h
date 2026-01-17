@@ -6,48 +6,41 @@
 #include <gtc\type_ptr.hpp>
 #include "..\Graphics\window.h"
 
-
 class Camera
 {
 private:
-	glm::vec3 cameraPosition;
-	glm::vec3 cameraViewDirection;
-	glm::vec3 cameraUp;
-	glm::vec3 cameraRight;
+    glm::vec3 cameraPosition;
+    glm::vec3 cameraViewDirection;
+    glm::vec3 cameraUp;
+    glm::vec3 cameraRight;
 
-	float rotationOx; // pitch up/down
-	float rotationOy; //yaw left /right
+    // Orbit parameters
+    float distanceFromPlayer;
+    float pitch;             // pitch 
+    float angleAroundPlayer; //yaw 
+   
 
 public:
-	Camera();
-	Camera(glm::vec3 cameraPosition);
-	Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec3 cameraUp);
-	~Camera();
+    Camera();
+    Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec3 cameraUp);
+    ~Camera();
 
-	glm::mat4 getViewMatrix();
-	glm::vec3 getCameraPosition();
-	glm::vec3 getCameraViewDirection();
-	glm::vec3 getCameraUp();
+    glm::mat4 getViewMatrix();
+    glm::vec3 getCameraPosition();
+    glm::vec3 getCameraViewDirection();
+    glm::vec3 getCameraUp();
 
-	// setters
-	void setCameraPosition(glm::vec3 pos);
-	void setCameraViewDirection(glm::vec3 direction); //force look dir
+    void processMouseInput(float xoffset, float yoffset, bool constrainPitch = true);
+    void updateCameraPosition(glm::vec3 playerPosition);
 
-	// movement
-	void keyboardMoveFront(float cameraSpeed);
-	void keyboardMoveBack(float cameraSpeed);
-	void keyboardMoveLeft(float cameraSpeed);
-	void keyboardMoveRight(float cameraSpeed);
-	void keyboardMoveUp(float cameraSpeed);
-	void keyboardMoveDown(float cameraSpeed);
-
-	// mouse rotation
-	void processMouseMovement(float xoffset, float yoffset); 
-
-	float getPitch() { 
-		return rotationOx; 
-	}
-	float getYaw() { 
-		return rotationOy; 
-	}
+    // Auto centering logic
+    float getYaw() const { 
+        return angleAroundPlayer; 
+    }
+    void setYaw(float angle) { 
+        angleAroundPlayer = angle; 
+    }
+    void setPitch(float angle) { 
+        pitch = angle; 
+    }
 };
