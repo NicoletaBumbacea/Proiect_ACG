@@ -321,7 +321,7 @@ int main()
             ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
             ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -25.0f, 0.0f)); // Pivot fix
         }
-        float fishingRodScale = 3.0f;
+        float fishingRodScale = 1.5f;
         ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
@@ -547,6 +547,7 @@ void processKeyboardInput()
         }
     }
     wasComboDown = comboNow;
+  
     if (window.isPressed(GLFW_KEY_E))
     {
         if (!eKeyPressedLastFrame)
@@ -554,17 +555,25 @@ void processKeyboardInput()
             float distToRod = glm::length(catPosition - rodWorldPos);
             float distToDoor = glm::length(catPosition - cabinPos);
             float distToInteraction = glm::length(catPosition - interactionPoint);
-
-            if (distToRod < 50.0f) {
+            if (hasFishingRod || distToRod < 50.0f)
+            {
                 if (!hasFishingRod) {
+                    // pick up rod
                     hasFishingRod = true;
+                    std::cout << "Rod Picked Up!" << std::endl;
                 }
                 else {
+                    //drop rod
                     hasFishingRod = false;
-                    rodWorldPos = catPosition;
+                    float dropDist = 10.0f;
+                    rodWorldPos.x = catPosition.x - (sin(yawRad) * dropDist);
+                    rodWorldPos.z = catPosition.z - (cos(yawRad) * dropDist);
                     rodWorldPos.y = -20.0f;
+
+                    std::cout << "Rod Dropped at: " << rodWorldPos.x << ", " << rodWorldPos.z << std::endl;
                 }
             }
+            // Menu interaction
             else if (distToInteraction < interactionRadius) {
                 if (extraWindow == nullptr) {
                     extraWindow = glfwCreateWindow(400, 300, "Interaction Menu", NULL, window.getWindow());
@@ -574,6 +583,7 @@ void processKeyboardInput()
                     glfwSetWindowShouldClose(extraWindow, true);
                 }
             }
+            //Door interaction 
             else if (distToDoor < 40.0f) {
                 isDoorOpen = !isDoorOpen;
             }
@@ -584,6 +594,7 @@ void processKeyboardInput()
         eKeyPressedLastFrame = false;
     }
 }
+
 
 Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex) {
     std::vector<Vertex> vertices;
