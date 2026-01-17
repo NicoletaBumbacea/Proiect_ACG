@@ -14,6 +14,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb\stb_image.h"
 
+#include "imgui\imgui.h"
+#include "imgui\imgui_impl_glfw.h"
+#include "imgui\imgui_impl_opengl3.h"
+
 void processKeyboardInput();
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 Mesh generateWaterGrid(int size, float spacing, std::vector<Texture> tex);
@@ -31,6 +35,7 @@ bool firstMouse = true;
 float lastX = 400, lastY = 400;
 
 bool isCursorLocked = true;
+bool showTaskWindow = true;
 
 const float MODEL_CORRECTION_ANGLE = -90.0f;
 glm::vec3 catPosition = glm::vec3(0.0f, -10.0f, 0.0f);
@@ -117,6 +122,27 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 10.0f;
+	style.FrameRounding = 5.0f;
+	style.PopupRounding = 5.0f;
+	style.ScrollbarRounding = 10.0f;
+	style.GrabRounding = 5.0f;
+
+	// Colors Gui screen
+	ImVec4* colors = style.Colors;
+	colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.15f, 0.85f); 
+	colors[ImGuiCol_TitleBg] = ImVec4(0.2f, 0.2f, 0.4f, 1.0f);   
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.3f, 0.3f, 0.6f, 1.0f);   
+	colors[ImGuiCol_Button] = ImVec4(0.2f, 0.5f, 0.2f, 1.0f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.7f, 0.3f, 1.0f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.1f, 0.4f, 0.1f, 1.0f);
+	colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   
+	ImGui_ImplOpenGL3_Init("#version 330");
 
 	// Load Shaders
 	Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
@@ -222,6 +248,20 @@ int main()
 	while (!window.isPressed(GLFW_KEY_ESCAPE) &&
 		glfwWindowShouldClose(window.getWindow()) == 0)
 	{
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		if (showTaskWindow)
+		{
+			ImGui::Begin("Quest Log");
+			ImGui::Text("Main Story: The Cat's Adventure");
+			if (ImGui::Button("Close Menu")) {
+				showTaskWindow = false;
+			}
+			ImGui::End();
+		}
+
 		window.clear();
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -488,8 +528,13 @@ int main()
 			}
 		}
 
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		window.update();
 	}
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void processKeyboardInput()

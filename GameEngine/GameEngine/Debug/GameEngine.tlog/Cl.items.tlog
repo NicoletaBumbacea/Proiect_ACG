@@ -1,7 +1,13 @@
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Camera\camera.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\camera.obj
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Graphics\window.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\window.obj
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\main.obj
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Model Loading\meshLoaderObj.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\meshLoaderObj.obj
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Model Loading\mesh.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\mesh.obj
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Shaders\shader.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\shader.obj
-C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Model Loading\texture.cpp;C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\texture.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Camera\camera.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\camera.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Graphics\window.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\window.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\imgui\imgui.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\imgui.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\imgui\imgui_draw.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\imgui_draw.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\imgui\imgui_impl_glfw.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\imgui_impl_glfw.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\imgui\imgui_impl_opengl3.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\imgui_impl_opengl3.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\imgui\imgui_tables.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\imgui_tables.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\imgui\imgui_widgets.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\imgui_widgets.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\main.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\main.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Model Loading\meshLoaderObj.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\meshLoaderObj.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Model Loading\mesh.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\mesh.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Shaders\shader.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\shader.obj
+C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Model Loading\texture.cpp;C:\Users\aleni\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Debug\texture.obj
