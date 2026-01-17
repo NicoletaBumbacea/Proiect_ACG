@@ -56,7 +56,15 @@ GLFWwindow* extraWindow = nullptr;
 glm::vec3 lightColor = glm::vec3(1.0f);
 glm::vec3 lightPos = glm::vec3(-180.0f, 100.0f, -200.0f);
 
-// Fish structure
+bool isFishing = false;
+
+bool isTransitioning = false;
+bool isZoomingIn = false; 
+float transitionTimer = 0.0f;
+float transitionDuration = 1.0f; 
+glm::vec3 startTransitionPos;
+
+// fish structure
 struct FishData {
 	glm::vec3 position;
 	glm::vec3 target;
@@ -69,6 +77,16 @@ float lerpAngle(float current, float target, float speed, float dt) {
 	while (diff > 180.0f) diff -= 360.0f;
 	while (diff < -180.0f) diff += 360.0f;
 	return current + diff * speed * dt;
+}
+
+bool checkNearWater(glm::vec3 pos) {
+	glm::vec3 riverCenter(-120.0f, -18.6f, -85.0f);
+	if (glm::distance(pos, riverCenter) < 95.0f && glm::distance(pos, riverCenter) > 10.0f) return true;
+
+	glm::vec3 oceanCenter(200.0f, -18.60f, 120.0f);
+	if (glm::distance(pos, oceanCenter) < 70.0f) return true;
+
+	return false;
 }
 
 glm::vec3 getRandomRiverPoint() {
@@ -132,7 +150,7 @@ int main()
 	style.ScrollbarRounding = 10.0f;
 	style.GrabRounding = 5.0f;
 
-	// Colors Gui screen
+	// colors GUI screen
 	ImVec4* colors = style.Colors;
 	colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.15f, 0.85f); 
 	colors[ImGuiCol_TitleBg] = ImVec4(0.2f, 0.2f, 0.4f, 1.0f);   
@@ -144,14 +162,14 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window.getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 
-	// Load Shaders
+	// Load shaders
 	Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
 	Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
 	Shader waterShader("Shaders/water_vertex_shader.glsl", "Shaders/water_fragment_shader.glsl");
 	Shader riverShader("Shaders/river_vertex_shader.glsl", "Shaders/river_fragment_shader.glsl");
 	Shader skyboxShader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
 
-	// Skybox Setup
+	// skybox setup
 	Skybox mySkybox;
 	mySkybox.setup();
 	std::vector<std::string> faces = {
@@ -274,12 +292,45 @@ int main()
 		processKeyboardInput();
 		catRotationY = lerpAngle(catRotationY, targetCatRotation, 10.0f, deltaTime);
 
+		glm::vec3 firstPersonPos = catPosition + glm::vec3(0.0f, 8.0f, 0.0f);
+
 		camera.updateCameraPosition(catPosition);
+		glm::vec3 thirdPersonPos = camera.getCameraPosition();
+
+		if (isTransitioning) {
+			transitionTimer += deltaTime;
+			float t = transitionTimer / transitionDuration;
+
+			t = t * t * (3.0f - 2.0f * t);
+
+			if (transitionTimer >= transitionDuration) {
+				isTransitioning = false;
+				isFishing = isZoomingIn;
+
+				if (isFishing) camera.setCameraPosition(firstPersonPos);
+				else camera.updateCameraPosition(catPosition);
+			}
+			else {
+				glm::vec3 currentPos;
+
+				if (isZoomingIn) {
+					currentPos = glm::mix(startTransitionPos, firstPersonPos, t);
+				}
+				else {
+					currentPos = glm::mix(startTransitionPos, thirdPersonPos, t);
+				}
+
+				camera.setCameraPosition(currentPos);
+			}
+		}
+		else if (isFishing) {
+			camera.setCameraPosition(firstPersonPos);
+		}
 
 		glm::mat4 ViewMatrix = camera.getViewMatrix();
 		glm::mat4 ProjectionMatrix = glm::perspective(90.0f, window.getWidth() * 1.0f / window.getHeight(), 0.1f, 10000.0f);
 
-		// Tracker logic
+		// tracker logic
 		titleUpdateTimer += deltaTime;
 		if (titleUpdateTimer > 0.1f) {
 			glm::vec3 pos = camera.getCameraPosition();
@@ -293,7 +344,7 @@ int main()
 			titleUpdateTimer = 0.0f;
 		}
 
-		// Draw water
+		// draw water
 		waterShader.use();
 		glm::vec3 waterPosition = glm::vec3(200.0f, -20.0f, 120.0f);
 		glm::mat4 WaterModel = glm::translate(glm::mat4(1.0), waterPosition);
@@ -305,7 +356,7 @@ int main()
 		glUniform3f(glGetUniformLocation(waterShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 		waterMesh.draw(waterShader);
 
-		// Draw river
+		// draw river
 		riverShader.use();
 		glm::vec3 riverPos = glm::vec3(-120.0f, -19.5f, -85.0f);
 		glm::mat4 RiverModel = glm::translate(glm::mat4(1.0), riverPos);
@@ -325,7 +376,7 @@ int main()
 		GLuint MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
 		GLuint ModelMatrixID = glGetUniformLocation(shader.getId(), "model");
 
-		// Draw plane
+		// draw plane
 		glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, -20.0f, 0.0f));
 		float planeScale = 3.0f;
 		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(planeScale, planeScale, planeScale));
@@ -335,7 +386,7 @@ int main()
 		plane.draw(shader);
 
 
-		// Draw masterfrog
+		// draw masterfrog
 		 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, -20.0f, -50.0f));
 		float frogScale = 40.0f;
 		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(frogScale, frogScale, frogScale));
@@ -344,7 +395,7 @@ int main()
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		frog.draw(shader);
 
-		// Draw boat
+		// draw boat
 		ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(-28.0f, -20.0f, -56.0f));
 		float boatScale = 0.1f;
 		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(boatScale, boatScale, boatScale));
@@ -353,26 +404,36 @@ int main()
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		boat.draw(shader);
 
-		// Fishing rod
+		// fishing rod
 		ModelMatrix = glm::mat4(1.0);
 		if (hasFishingRod) {
-			// Attached to cat
-			ModelMatrix = glm::translate(ModelMatrix, catPosition);
-			ModelMatrix = glm::rotate(ModelMatrix, catRotationY, glm::vec3(0.0f, 1.0f, 0.0f));
-			ModelMatrix = glm::translate(ModelMatrix, glm::vec3(1.0f, 10.0f, 1.5f));
-			ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -10.0f, -5.0f));
+			if (isFishing && !isTransitioning) {
+				// first person
+				glm::mat4 invView = glm::inverse(ViewMatrix);
+				ModelMatrix = invView;
+				ModelMatrix = glm::translate(ModelMatrix, glm::vec3(1.5f, -1.5f, -2.5f));
+				ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-10.0f), glm::vec3(1, 0, 0));
+				ModelMatrix = glm::rotate(ModelMatrix, glm::radians(170.0f), glm::vec3(0, 1, 0));
+			}
+			else {
+				// thrid person
+				ModelMatrix = glm::translate(ModelMatrix, catPosition);
+				ModelMatrix = glm::rotate(ModelMatrix, catRotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+				ModelMatrix = glm::translate(ModelMatrix, glm::vec3(1.0f, 10.0f, 1.5f));
+				ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -10.0f, -5.0f));
+			}
 		}
 		else {
-			// On ground
+			// on ground logic
 			ModelMatrix = glm::translate(ModelMatrix, rodWorldPos);
-			float spinSpeed = 50.0f; 
+			float spinSpeed = 50.0f;
 			float spinAngle = (float)glfwGetTime() * spinSpeed;
 			ModelMatrix = glm::rotate(ModelMatrix, (spinAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			float floatHeight = sin((float)glfwGetTime() * 2.0f) * 1.0f;
 			ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, floatHeight + 3.0f, 0.0f));
 			ModelMatrix = glm::rotate(ModelMatrix, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-
 		}
+
 		float fishingRodScale = 1.5f;
 		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(fishingRodScale, fishingRodScale, fishingRodScale));
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
@@ -380,7 +441,7 @@ int main()
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		fishingRod.draw(shader);
 
-		// Draw reeds
+		// draw reeds
 		std::vector<glm::vec3> reedPositions = {
 			glm::vec3(-25.0f, -20.0f, -80.0f),
 			glm::vec3(-30.0f, -20.0f, -75.0f),
@@ -396,7 +457,7 @@ int main()
 			reed.draw(shader);
 		}
 
-		// Draw trees
+		// draw trees
 		std::vector<glm::vec3> treePositions = {
 			glm::vec3(225.0f, -20.0f, -162.0f),
 			glm::vec3(205.0f, -20.0f, -175.0f),
@@ -412,7 +473,7 @@ int main()
 			tree.draw(shader);
 		}
 
-		// Draw river fish
+		// draw river fish
 		for (auto& f : schoolOfFish) {
 			glm::vec3 direction = f.target - f.position;
 			if (glm::length(direction) < 1.0f) {
@@ -432,7 +493,7 @@ int main()
 			fish.draw(shader);
 		}
 
-		// Draw ocean fish
+		// draw ocean fish
 		for (auto& f : schoolOfOceanFish) {
 			glm::vec3 direction = f.target - f.position;
 			if (glm::length(direction) < 1.0f) {
@@ -452,18 +513,25 @@ int main()
 			fish.draw(shader);
 		}
 
-		//  Draw cat
-		ModelMatrix = glm::mat4(1.0);
-		ModelMatrix = glm::translate(ModelMatrix, catPosition);
-		ModelMatrix = glm::rotate(ModelMatrix, catRotationY, glm::vec3(0.0f, 1.0f, 0.0f));
-		float catScale = 5.0f;
-		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(catScale, catScale, catScale));
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		cat.draw(shader);
+		// draw cat
+		bool shouldDrawCat = true;
 
-		// Hammock
+		if (isFishing && !isTransitioning) shouldDrawCat = false;
+		if (isTransitioning && isZoomingIn && (transitionTimer / transitionDuration > 0.8f)) shouldDrawCat = false;
+
+		if (shouldDrawCat) {
+			ModelMatrix = glm::mat4(1.0);
+			ModelMatrix = glm::translate(ModelMatrix, catPosition);
+			ModelMatrix = glm::rotate(ModelMatrix, catRotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+			float catScale = 5.0f;
+			ModelMatrix = glm::scale(ModelMatrix, glm::vec3(catScale, catScale, catScale));
+			MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+			glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+			glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+			cat.draw(shader);
+		}
+
+		// hammock
 		glm::mat4 BaseMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(210.0f, -20.0f, 25.0f));
 		BaseMatrix = glm::scale(BaseMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
 		BaseMatrix = glm::rotate(BaseMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -478,20 +546,20 @@ int main()
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &TreeMatrix[0][0]);
 		hammockTrees.draw(shader);
 
-		// Cabin
+		// cabin
 		glm::mat4 CabinMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(205.0f, -20.0f, -70.0f));
 		CabinMatrix = glm::scale(CabinMatrix, glm::vec3(4.0f, 4.0f, 4.0f));
 		CabinMatrix = glm::rotate(CabinMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 CabinMVP = ProjectionMatrix * ViewMatrix * CabinMatrix;
 
-		// Foundation & Body & Roof
+		// foundation and body and roof
 		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &CabinMVP[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &CabinMatrix[0][0]);
 		cabinFoundation.draw(shader);
 		cabin.draw(shader);
 		cabinRoof.draw(shader);
 
-		// Door Animation
+		// door Animation
 		static float currentDoorSlide = 0.0f;
 		float targetSlide = isDoorOpen ? 1.2f : 0.0f;
 		float slideSpeed = 2.0f * deltaTime;
@@ -511,24 +579,24 @@ int main()
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &DoorMatrix[0][0]);
 		cabinDoor.draw(shader);
 
-		//  Draw sun
+		//  draw sun
 		sunShader.use();
 		ModelMatrix = glm::translate(glm::mat4(1.0), lightPos);
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 		glUniformMatrix4fv(glGetUniformLocation(sunShader.getId(), "MVP"), 1, GL_FALSE, &MVP[0][0]);
 		sun.draw(sunShader);
 
-		//  Draw Skybox 
+		//  draw skybox 
 		mySkybox.draw(skyboxShader, ViewMatrix, ProjectionMatrix);
 
-		// Menu Logic
+		// menu logic
 		if (!isMenuOpen) {
 			shader.use();
 			glm::mat4 MarkerMatrix = glm::translate(glm::mat4(1.0f), interactionPoint);
 			glm::mat4 MarkerMVP = ProjectionMatrix * ViewMatrix * MarkerMatrix;
 			glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MarkerMVP[0][0]);
 			glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &MarkerMatrix[0][0]);
-			sun.draw(shader); // Using sun sphere as marker
+			sun.draw(shader);
 		}
 
 		if (extraWindow != nullptr) {
@@ -559,44 +627,61 @@ int main()
 
 void processKeyboardInput()
 {
-	float catSpeed = 20.0f * deltaTime;
-	bool moved = false;
-	glm::vec3 direction(0.0f);
+	static bool enterPressedLastFrame = false;
+	if (window.isPressed(GLFW_KEY_ENTER)) {
+		if (!enterPressedLastFrame) {
+			if (!isFishing && !isTransitioning && hasFishingRod && checkNearWater(catPosition)) {
+				isTransitioning = true;
+				isZoomingIn = true;
+				transitionTimer = 0.0f;
+				startTransitionPos = camera.getCameraPosition();
 
-	glm::vec3 camForward = camera.getCameraViewDirection();
-	camForward.y = 0.0f;
-	if (glm::length(camForward) > 0.01f) camForward = glm::normalize(camForward);
-	glm::vec3 camRight = glm::cross(camForward, glm::vec3(0, 1, 0));
-	if (glm::length(camRight) > 0.01f) camRight = glm::normalize(camRight);
-
-	if (window.isPressed(GLFW_KEY_W)) { direction += camForward; moved = true; }
-	if (window.isPressed(GLFW_KEY_S)) { direction -= camForward; moved = true; }
-	if (window.isPressed(GLFW_KEY_A)) { direction -= camRight; moved = true; }
-	if (window.isPressed(GLFW_KEY_D)) { direction += camRight; moved = true; }
-
-	if (moved && glm::length(direction) > 0.01f) {
-		direction = glm::normalize(direction);
-		catPosition += direction * catSpeed;
-		float movementAngle = glm::degrees(atan2(direction.x, direction.z));
-		targetCatRotation = movementAngle + MODEL_CORRECTION_ANGLE;
+				isCursorLocked = true;
+				glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+		}
+		enterPressedLastFrame = true;
+	}
+	else {
+		enterPressedLastFrame = false;
 	}
 
+	if (!isFishing) {
+		float catSpeed = 20.0f * deltaTime;
+		bool moved = false;
+		glm::vec3 direction(0.0f);
+
+		glm::vec3 camForward = camera.getCameraViewDirection();
+		camForward.y = 0.0f;
+		if (glm::length(camForward) > 0.01f) camForward = glm::normalize(camForward);
+		glm::vec3 camRight = glm::cross(camForward, glm::vec3(0, 1, 0));
+		if (glm::length(camRight) > 0.01f) camRight = glm::normalize(camRight);
+
+		if (window.isPressed(GLFW_KEY_W)) { direction += camForward; moved = true; }
+		if (window.isPressed(GLFW_KEY_S)) { direction -= camForward; moved = true; }
+		if (window.isPressed(GLFW_KEY_A)) { direction -= camRight; moved = true; }
+		if (window.isPressed(GLFW_KEY_D)) { direction += camRight; moved = true; }
+
+		if (moved && glm::length(direction) > 0.01f) {
+			direction = glm::normalize(direction);
+			catPosition += direction * catSpeed;
+			float movementAngle = glm::degrees(atan2(direction.x, direction.z));
+			targetCatRotation = movementAngle + MODEL_CORRECTION_ANGLE;
+		}
+	}
 
 	static bool wasComboDown = false;
 	bool ctrlDown = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
 	bool rightClick = glfwGetMouseButton(window.getWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 	bool comboNow = ctrlDown && rightClick;
 
-	if (comboNow && !wasComboDown)
-	{
+	if (comboNow && !wasComboDown) {
 		isCursorLocked = !isCursorLocked;
-
 		if (isCursorLocked) {
 			glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			firstMouse = true;
 		}
 		else {
-
 			glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 	}
@@ -606,43 +691,43 @@ void processKeyboardInput()
 	{
 		if (!eKeyPressedLastFrame)
 		{
-			float distToRod = glm::length(catPosition - rodWorldPos);
-			float distToDoor = glm::length(catPosition - cabinPos);
-			float distToInteraction = glm::length(catPosition - interactionPoint);
-
-			// Fishing Rod Logic from the second code
-			if (hasFishingRod || distToRod < 50.0f)
-			{
-				if (!hasFishingRod) {
-					// pick up rod
-					hasFishingRod = true;
-					std::cout << "Rod Picked Up!" << std::endl;
-				}
-				else {
-					// drop rod with physics
-					hasFishingRod = false;
-					float dropDist = 10.0f;
-					float yawRad = glm::radians(catRotationY);
-					rodWorldPos.x = catPosition.x - (sin(yawRad) * dropDist);
-					rodWorldPos.z = catPosition.z - (cos(yawRad) * dropDist);
-					rodWorldPos.y = -20.0f;
-
-					std::cout << "Rod Dropped at: " << rodWorldPos.x << ", " << rodWorldPos.z << std::endl;
-				}
+			if (isFishing && !isTransitioning) {
+				isTransitioning = true;
+				isZoomingIn = false;
+				transitionTimer = 0.0f;
+				startTransitionPos = camera.getCameraPosition();
+				std::cout << "Starting Zoom Out..." << std::endl;
 			}
-			// Menu interaction from the first code
-			else if (distToInteraction < interactionRadius) {
-				if (extraWindow == nullptr) {
-					extraWindow = glfwCreateWindow(400, 300, "Interaction Menu", NULL, window.getWindow());
-					isMenuOpen = true;
+			else {
+				float distToRod = glm::length(catPosition - rodWorldPos);
+				float distToDoor = glm::length(catPosition - cabinPos);
+				float distToInteraction = glm::length(catPosition - interactionPoint);
+
+				if (hasFishingRod || distToRod < 50.0f) {
+					if (!hasFishingRod) {
+						hasFishingRod = true;
+					}
+					else {
+						hasFishingRod = false;
+						float dropDist = 10.0f;
+						float yawRad = glm::radians(catRotationY);
+						rodWorldPos.x = catPosition.x - (sin(yawRad) * dropDist);
+						rodWorldPos.z = catPosition.z - (cos(yawRad) * dropDist);
+						rodWorldPos.y = -20.0f;
+					}
 				}
-				else {
-					glfwSetWindowShouldClose(extraWindow, true);
+				else if (distToInteraction < interactionRadius) {
+					if (extraWindow == nullptr) {
+						extraWindow = glfwCreateWindow(400, 300, "Interaction Menu", NULL, window.getWindow());
+						isMenuOpen = true;
+					}
+					else {
+						glfwSetWindowShouldClose(extraWindow, true);
+					}
 				}
-			}
-			// Door interaction from the first code
-			else if (distToDoor < 40.0f) {
-				isDoorOpen = !isDoorOpen;
+				else if (distToDoor < 40.0f) {
+					isDoorOpen = !isDoorOpen;
+				}
 			}
 			eKeyPressedLastFrame = true;
 		}

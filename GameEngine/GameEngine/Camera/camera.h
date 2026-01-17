@@ -43,4 +43,5 @@ public:
     void setPitch(float angle) { 
         pitch = angle; 
     }
+    void setCameraPosition(glm::vec3 newPos) { cameraPosition = newPos; }
 };
