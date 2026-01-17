@@ -6,8 +6,8 @@ Camera::Camera(glm::vec3 cameraPosition)
 	this->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
 	this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->cameraRight = glm::cross(cameraViewDirection, cameraUp);
-	this->rotationOx = 0.0f;
-	this->rotationOy = -90.0f;
+	this->rotationOx = 0.0f;   // pitch
+	this->rotationOy = -90.0f; // yaw 
 }
 
 Camera::Camera()
@@ -26,55 +26,45 @@ Camera::Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec
 	this->cameraViewDirection = cameraViewDirection;
 	this->cameraUp = cameraUp;
 	this->cameraRight = glm::cross(cameraViewDirection, cameraUp);
+	this->rotationOx = 0.0f;
+	this->rotationOy = -90.0f;
 }
 
-Camera::~Camera()
-{
-}
+Camera::~Camera() {}
 
-void Camera::keyboardMoveFront(float cameraSpeed)
-{
+// movement func
+void Camera::keyboardMoveFront(float cameraSpeed) {
 	cameraPosition += cameraViewDirection * cameraSpeed;
 }
-
-void Camera::keyboardMoveBack(float cameraSpeed)
-{
+void Camera::keyboardMoveBack(float cameraSpeed) {
 	cameraPosition -= cameraViewDirection * cameraSpeed;
 }
-
-void Camera::keyboardMoveLeft(float cameraSpeed)
-{
+void Camera::keyboardMoveLeft(float cameraSpeed) {
 	cameraPosition -= cameraRight * cameraSpeed;
 }
-
-void Camera::keyboardMoveRight(float cameraSpeed)
-{
+void Camera::keyboardMoveRight(float cameraSpeed) {
 	cameraPosition += cameraRight * cameraSpeed;
 }
-
-void Camera::keyboardMoveUp(float cameraSpeed)
-{
+void Camera::keyboardMoveUp(float cameraSpeed) {
 	cameraPosition += cameraUp * cameraSpeed;
 }
-
-void Camera::keyboardMoveDown(float cameraSpeed)
-{
+void Camera::keyboardMoveDown(float cameraSpeed) {
 	cameraPosition -= cameraUp * cameraSpeed;
 }
 
-void Camera::rotateOx(float angle)
+//mouse logic
+void Camera::processMouseMovement(float xoffset, float yoffset)
 {
-	cameraViewDirection = glm::normalize(glm::vec3((glm::rotate(glm::mat4(1.0f), angle, cameraRight) * glm::vec4(cameraViewDirection, 1))));
-	cameraUp = glm::normalize(glm::cross(cameraRight, cameraViewDirection));
-	cameraRight = glm::cross(cameraViewDirection, cameraUp);
-}
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
 
-void Camera::rotateOy(float angle)
-{
-	glm::vec3 globalUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	cameraViewDirection = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.0f), angle, globalUp) * glm::vec4(cameraViewDirection, 1.0f)));
-	cameraRight = glm::normalize(glm::cross(cameraViewDirection, globalUp));
-	cameraUp = glm::normalize(glm::cross(cameraRight, cameraViewDirection));
+	rotationOy -= xoffset; //yaw 
+	rotationOx += yoffset; // itch
+
+	// prevent screen to flip
+	if (rotationOx > 89.0f) rotationOx = 89.0f;
+	if (rotationOx < -10.0f) rotationOx = -10.0f; 
 }
 
 void Camera::setCameraPosition(glm::vec3 pos)
@@ -82,22 +72,18 @@ void Camera::setCameraPosition(glm::vec3 pos)
 	this->cameraPosition = pos;
 }
 
+void Camera::setCameraViewDirection(glm::vec3 direction)
+{
+	this->cameraViewDirection = glm::normalize(direction);
+	this->cameraRight = glm::normalize(glm::cross(cameraViewDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
+	this->cameraUp = glm::normalize(glm::cross(cameraRight, cameraViewDirection));
+}
+
 glm::mat4 Camera::getViewMatrix()
 {
 	return glm::lookAt(cameraPosition, cameraPosition + cameraViewDirection, cameraUp);
 }
 
-glm::vec3 Camera::getCameraPosition()
-{
-	return cameraPosition;
-}
-
-glm::vec3 Camera::getCameraViewDirection()
-{
-	return cameraViewDirection;
-}
-
-glm::vec3 Camera::getCameraUp()
-{
-	return cameraUp;
-}
+glm::vec3 Camera::getCameraPosition() { return cameraPosition; }
+glm::vec3 Camera::getCameraViewDirection() { return cameraViewDirection; }
+glm::vec3 Camera::getCameraUp() { return cameraUp; }
