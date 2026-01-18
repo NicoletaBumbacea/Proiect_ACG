@@ -57,5 +57,5 @@ private:
 
     Mesh* sunMesh, * plane, * waterMesh, * riverMesh, * boat, * reed, * tree;
     Mesh* fishMesh, * hammock, * hammockTrees, * fishingRod, * cabin;
-    Mesh* cabinFoundation, * cabinRoof, * cabinDoor, * frog;
+    Mesh* cabinFoundation, * cabinRoof, * cabinDoor, * bear;
 };

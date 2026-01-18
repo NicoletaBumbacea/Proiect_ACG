@@ -1,6 +1,6 @@
 #include "Player.h"
 
-Player::Player(Mesh* m) : GameObject(m, glm::vec3(0.0f, -10.0f, 0.0f), 5.0f) {
+Player::Player(Mesh* m) : GameObject(m, glm::vec3(0.0f, -17.5f, 0.0f), 5.0f) {
     rotation.y = 180.0f;
     targetRotationY = 180.0f;
 }

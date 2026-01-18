@@ -111,13 +111,13 @@ void Application::initAssets() {
     std::vector<Texture> t_bright = { {loadBMP("Resources/Textures/brightwood.bmp"), "texture_diffuse"} };
     std::vector<Texture> t_dark = { {loadBMP("Resources/Textures/darkwood.bmp"), "texture_diffuse"} };
     std::vector<Texture> t_rock = { {loadBMP("Resources/Textures/rock_cabin.bmp"), "texture_diffuse"} };
-    std::vector<Texture> t_frog = { {loadBMP("Resources/Textures/masterfrog.bmp"), "texture_diffuse"} };
+    std::vector<Texture> t_bear = { {loadBMP("Resources/Textures/bear.bmp"), "texture_diffuse"} };
 
     // mesh loader
     MeshLoaderObj loader;
     sunMesh = new Mesh(loader.loadObj("Resources/Models/sphere.obj", t_orange));
     plane = new Mesh(loader.loadObj("Resources/Models/plane.obj", t_sand));
-    frog = new Mesh(loader.loadObj("Resources/Models/masterfrog.obj", t_frog));
+    bear = new Mesh(loader.loadObj("Resources/Models/bear.obj", t_bear));
     boat = new Mesh(loader.loadObj("Resources/Models/boat.obj", t_boat));
     reed = new Mesh(loader.loadObj("Resources/Models/reed.obj", t_reed));
     tree = new Mesh(loader.loadObj("Resources/Models/bigtree.obj", t_tree));
@@ -250,10 +250,11 @@ void Application::render() {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &pM[0][0]);
     plane->draw(*mainShader);
 
-    glm::mat4 frogM = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0, -20, -50)), glm::vec3(40.0f));
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * frogM)[0][0]);
-    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &frogM[0][0]);
-    frog->draw(*mainShader);
+   
+    glm::mat4 bearM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(23.0f, -20, -102)), glm::vec3(1.5f)) , (45.0f), glm::vec3(0, 1, 0));
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * bearM)[0][0]);
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &bearM[0][0]);
+    bear->draw(*mainShader);
 
     glm::mat4 boatM = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-28, -20, -56)), glm::vec3(0.1f));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * boatM)[0][0]);
