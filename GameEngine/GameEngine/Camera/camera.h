@@ -1,9 +1,8 @@
 #pragma once
-
 #include <glm.hpp>
-#include <gtx\transform.hpp>
-#include <gtc\matrix_transform.hpp>
-#include <gtc\type_ptr.hpp>
+#include <gtx/transform.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 #include "..\Graphics\window.h"
 
 class Camera
@@ -14,11 +13,10 @@ private:
     glm::vec3 cameraUp;
     glm::vec3 cameraRight;
 
-    // Orbit parameters
+    // orbit parameters 
     float distanceFromPlayer;
-    float pitch;             // pitch 
-    float angleAroundPlayer; //yaw 
-   
+    float pitch;             // vertical angle
+    float angleAroundPlayer; // horizontal angle -yaw
 
 public:
     Camera();
@@ -30,18 +28,22 @@ public:
     glm::vec3 getCameraViewDirection();
     glm::vec3 getCameraUp();
 
+    // mouse logic for rotation
     void processMouseInput(float xoffset, float yoffset, bool constrainPitch = true);
+
+    //orbit math logic
     void updateCameraPosition(glm::vec3 playerPosition);
 
-    // Auto centering logic
     float getYaw() const { 
         return angleAroundPlayer; 
     }
-    void setYaw(float angle) { 
-        angleAroundPlayer = angle; 
+    void setYaw(float angle) {
+        angleAroundPlayer = angle;
     }
-    void setPitch(float angle) { 
-        pitch = angle; 
+    void setPitch(float angle) {
+        pitch = angle;
     }
-    void setCameraPosition(glm::vec3 newPos) { cameraPosition = newPos; }
+    void setCameraPosition(glm::vec3 newPos) { 
+        cameraPosition = newPos; 
+    }
 };
