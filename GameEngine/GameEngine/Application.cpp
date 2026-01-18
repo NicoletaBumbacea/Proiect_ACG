@@ -159,6 +159,13 @@ void Application::run() {
 void Application::update() {
     // update obj
     player->update(deltaTime);
+    if (currentTask == 0) {
+        if (pressedW && pressedA && pressedS && pressedD) {
+            currentTask = 1; 
+            currentTaskText = "Task 2: ";
+            std::cout << "Task 1 Complete!" << std::endl;
+        }
+    }
     for (auto f : schoolOfFish) f->update(deltaTime);
     for (auto f : schoolOfOceanFish) f->update(deltaTime);
 
@@ -206,9 +213,24 @@ void Application::render() {
     ImGui::NewFrame();
 
     if (showTaskWindow) {
+        ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Always);
         ImGui::Begin("Quest Log");
-        ImGui::Text("Main Story: The Cat's Adventure");
-        if (ImGui::Button("Close Menu")) showTaskWindow = false;
+        ImGui::SetWindowFontScale(1.5f);
+        ImGui::Text("Agamitza goes fishing");
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Current Task:");
+        ImGui::TextWrapped("%s", currentTaskText.c_str());
+
+        
+        if (currentTask == 0) {
+            ImGui::Text("Stretches:");
+            ImGui::BulletText(pressedW ? "Forward [X]" : "Forward [ ]");
+            ImGui::BulletText(pressedA ? "Left    [X]" : "Left    [ ]");
+            ImGui::BulletText(pressedS ? "Back    [X]" : "Back    [ ]");
+            ImGui::BulletText(pressedD ? "Right   [X]" : "Right   [ ]");
+        }
+
+       
         ImGui::End();
     }
 

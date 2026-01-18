@@ -44,10 +44,22 @@ void InputManager::updateKeyboard(GLFWwindow* window, Application& app, float de
         glm::vec3 side = glm::normalize(glm::cross(fwd, glm::vec3(0, 1, 0)));
 
         bool moved = false;
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { dir += fwd; moved = true; }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { dir -= fwd; moved = true; }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { dir -= side; moved = true; }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { dir += side; moved = true; }
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            dir += fwd; moved = true;
+            app.pressedW = true; //mark W as pressed
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            dir -= fwd; moved = true;
+            app.pressedS = true; // mark S as pressed
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            dir -= side; moved = true;
+            app.pressedA = true; // mark A as pressed
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            dir += side; moved = true;
+            app.pressedD = true; // mark D as pressed
+        }
 
         if (moved && glm::length(dir) > 0.01f) {
             dir = glm::normalize(dir);

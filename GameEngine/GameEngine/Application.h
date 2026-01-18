@@ -51,6 +51,14 @@ private:
     bool showTaskWindow, eKeyPressedLastFrame, enterPressedLastFrame;
     float transitionTimer, transitionDuration, currentDoorSlide;
 
+    //task 1
+    int currentTask = 0; 
+    bool pressedW = false;
+    bool pressedA = false;
+    bool pressedS = false;
+    bool pressedD = false;
+    std::string currentTaskText = "Task 1: Morning Stretches. Move (W, A, S, D) to wake up.";
+
     glm::vec3 rodWorldPos, cabinPos, interactionPoint, lightPos, lightColor, startTransitionPos;
 
     Shader* mainShader, * sunShader, * waterShader, * riverShader, * skyboxShader;
