@@ -35,7 +35,13 @@ Application::Application()
     lightPos(-180.0f, 100.0f, -200.0f),
     lightColor(1.0f, 1.0f, 1.0f),
     extraWindow(nullptr),
-    startTransitionPos(0.0f) {
+    startTransitionPos(0.0f)
+{
+   
+    bearPos = glm::vec3(23.0f, -20.0f, -102.0f);
+    showBearDialog = false;
+    pressedT = false;
+
     //mouse callback to the camera with window pointer
     glfwSetWindowUserPointer(window.getWindow(), &camera);
     glfwSetCursorPosCallback(window.getWindow(),
@@ -159,10 +165,11 @@ void Application::run() {
 void Application::update() {
     // update obj
     player->update(deltaTime);
+
     if (currentTask == 0) {
         if (pressedW && pressedA && pressedS && pressedD) {
-            currentTask = 1; 
-            currentTaskText = "Task 2: ";
+            currentTask = 1;
+            currentTaskText = "Task 2: The Bear knows secrets. Talk to him at [23, -102] (Press T).";
             std::cout << "Task 1 Complete!" << std::endl;
         }
     }
@@ -207,22 +214,23 @@ void Application::update() {
 }
 
 void Application::render() {
-    //ImGui and buffers
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+   
     if (showTaskWindow) {
-        ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Always);
-        ImGui::Begin("Quest Log");
+        ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(500, 350), ImGuiCond_Always);
+        ImGui::Begin("Quest Log", nullptr, ImGuiWindowFlags_NoCollapse);
         ImGui::SetWindowFontScale(1.5f);
         ImGui::Text("Agamitza goes fishing");
         ImGui::Separator();
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "Current Task:");
         ImGui::TextWrapped("%s", currentTaskText.c_str());
 
-        
         if (currentTask == 0) {
+            ImGui::Spacing();
             ImGui::Text("Stretches:");
             ImGui::BulletText(pressedW ? "Forward [X]" : "Forward [ ]");
             ImGui::BulletText(pressedA ? "Left    [X]" : "Left    [ ]");
@@ -230,7 +238,33 @@ void Application::render() {
             ImGui::BulletText(pressedD ? "Right   [X]" : "Right   [ ]");
         }
 
-       
+        ImGui::Spacing();
+        ImGui::Separator();
+        if (ImGui::Button("Close Menu")) showTaskWindow = false;
+        ImGui::End();
+    }
+
+    if (showBearDialog) {
+        ImGuiIO& io = ImGui::GetIO();
+        ImVec2 center(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(400, 250), ImGuiCond_Always);
+        ImGui::SetWindowFontScale(1.4f);
+
+        ImGui::Begin("Interaction", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Wise Bear says:");
+        ImGui::Separator();
+        ImGui::TextWrapped("Grrrr... hello little cat.");
+        ImGui::Spacing();
+        ImGui::TextWrapped("You look hungry. I saw a Fishing Rod left by the humans near the river bank.");
+        ImGui::Spacing();
+        ImGui::TextWrapped("Go to coordinates: [190, -195]");
+        ImGui::Separator();
+        if (ImGui::Button("Thank you, Mr. Bear!", ImVec2(380, 40))) {
+            showBearDialog = false;
+            currentTask = 2;
+            currentTaskText = "Task 3: Find the Rod at [190, -195] and pick it up (Press E).";
+        }
         ImGui::End();
     }
 
@@ -272,8 +306,8 @@ void Application::render() {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &pM[0][0]);
     plane->draw(*mainShader);
 
-   
-    glm::mat4 bearM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(23.0f, -20, -102)), glm::vec3(1.5f)) , (45.0f), glm::vec3(0, 1, 0));
+
+    glm::mat4 bearM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(23.0f, -20, -102)), glm::vec3(1.5f)), (45.0f), glm::vec3(0, 1, 0));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * bearM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &bearM[0][0]);
     bear->draw(*mainShader);
@@ -457,6 +491,16 @@ void Application::updateTitle() {
             << " | Rod: " << (hasFishingRod ? "YES" : "NO");
         glfwSetWindowTitle(window.getWindow(), ss.str().c_str());
         titleUpdateTimer = 0.0f;
+    }
+}
+
+void Application::handleTPressed() {
+
+    if (currentTask == 1) {
+        float distance = glm::distance(player->position, bearPos);
+        if (distance < 25.0f) {
+            showBearDialog = true; 
+        }
     }
 }
 

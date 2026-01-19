@@ -61,6 +61,7 @@ void InputManager::updateKeyboard(GLFWwindow* window, Application& app, float de
             app.pressedD = true; // mark D as pressed
         }
 
+
         if (moved && glm::length(dir) > 0.01f) {
             dir = glm::normalize(dir);
             app.player->position += dir * speed;
@@ -69,6 +70,13 @@ void InputManager::updateKeyboard(GLFWwindow* window, Application& app, float de
             app.player->targetRotationY = angle + app.player->MODEL_CORRECTION_ANGLE;
         }
     }
+
+    static bool tWasDown = false;
+    bool tIsDown = glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS;
+    if (tIsDown && !tWasDown) {
+        app.handleTPressed(); // Call the new function
+    }
+    tWasDown = tIsDown;
 
     // enter logic - fishing 
     static bool enterWasDown = false;

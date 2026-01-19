@@ -27,6 +27,7 @@ public:
 
     void handleEnterPressed();
     void handleEPressed();
+    void handleTPressed();
 
 private:
     void initImGui();
@@ -58,6 +59,11 @@ private:
     bool pressedS = false;
     bool pressedD = false;
     std::string currentTaskText = "Task 1: Morning Stretches. Move (W, A, S, D) to wake up.";
+
+	//task 2
+    glm::vec3 bearPos;        
+    bool showBearDialog;      
+    bool pressedT;
 
     glm::vec3 rodWorldPos, cabinPos, interactionPoint, lightPos, lightColor, startTransitionPos;
 
