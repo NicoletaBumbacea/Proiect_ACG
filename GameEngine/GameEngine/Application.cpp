@@ -42,6 +42,13 @@ Application::Application()
     showBearDialog = false;
     pressedT = false;
 
+    // fishing init
+    fishingState = FISHING_IDLE;
+    fishingTimer = 0.0f;
+    timeToBite = 0.0f;
+    fishCaughtCount = 0;
+    fishingMessage = "Press Left Click to Cast";
+
     //mouse callback to the camera with window pointer
     glfwSetWindowUserPointer(window.getWindow(), &camera);
     glfwSetCursorPosCallback(window.getWindow(),
@@ -92,6 +99,7 @@ void Application::initAssets() {
     waterShader = new Shader("Shaders/water_vertex_shader.glsl", "Shaders/water_fragment_shader.glsl");
     riverShader = new Shader("Shaders/river_vertex_shader.glsl", "Shaders/river_fragment_shader.glsl");
     skyboxShader = new Shader("Shaders/skybox_vertex.glsl", "Shaders/skybox_fragment.glsl");
+    bobberShader = new Shader("Shaders/bobber_vertex.glsl", "Shaders/bobber_fragment.glsl");
 
     // skybox
     mySkybox.setup();
@@ -146,6 +154,17 @@ void Application::initAssets() {
     // fih school
     for (int i = 0; i < 5; i++) schoolOfFish.push_back(new Fish(fishMesh, false));
     for (int i = 0; i < 10; i++) schoolOfOceanFish.push_back(new Fish(fishMesh, true));
+
+    // rod line
+    glGenVertexArrays(1, &lineVAO);
+    glGenBuffers(1, &lineVBO);
+    glBindVertexArray(lineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 50, NULL, GL_DYNAMIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
 }
 
 void Application::run() {
@@ -211,6 +230,25 @@ void Application::update() {
         currentDoorSlide = std::max(currentDoorSlide - slideSpeed, targetSlide);
 
     updateTitle();
+
+    // fishing waiting
+    if (isFishing && !isTransitioning) {
+        if (fishingState == FISHING_WAITING) {
+            fishingTimer += deltaTime;
+
+            if (fishingTimer >= timeToBite) {
+                fishingState = FISHING_BITING;
+                fishingMessage = "!!! FISH ON !!! CLICK NOW !!!";
+            }
+        }
+    }
+
+    if (castAnimTimer > 0.0f) {
+        castAnimTimer += deltaTime;
+        if (castAnimTimer >= 0.6f) {
+            castAnimTimer = 0.0f;
+        }
+    }
 }
 
 void Application::render() {
@@ -241,6 +279,47 @@ void Application::render() {
         ImGui::Spacing();
         ImGui::Separator();
         if (ImGui::Button("Close Menu")) showTaskWindow = false;
+
+        // fishing
+        if (isFishing) {
+            ImGui::SetNextWindowPos(ImVec2(780, 780), ImGuiCond_Always);
+            ImGui::Begin("Fishing Status", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::SetWindowFontScale(1.5f);
+
+            if (fishingState == FISHING_BITING) {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", fishingMessage.c_str());
+            }
+            else {
+                ImGui::TextColored(ImVec4(1, 1, 1, 1), "%s", fishingMessage.c_str());
+            }
+            ImGui::Text("Fish Caught: %d", fishCaughtCount);
+            ImGui::End();
+        }
+        else {
+            ImGuiIO& io = ImGui::GetIO();
+            float padding = 20.0f;
+
+            ImGui::SetNextWindowPos(
+                ImVec2(io.DisplaySize.x - padding, padding),
+                ImGuiCond_Always,
+                ImVec2(1.0f, 0.0f)
+            );
+
+            ImGui::SetNextWindowBgAlpha(0.0f);
+            ImGui::Begin("RoamingHUD", nullptr,
+                ImGuiWindowFlags_NoTitleBar |
+                ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoInputs |
+                ImGuiWindowFlags_NoDecoration
+            );
+
+            ImGui::SetWindowFontScale(1.5f);
+            ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), "Fish in Backpack: %d", fishCaughtCount);
+
+            ImGui::End();
+        }
+
         ImGui::End();
     }
 
@@ -343,12 +422,22 @@ void Application::render() {
     if (hasFishingRod) {
         if (isFishing && !isTransitioning) {
             // first person
-            rodM =
-                glm::inverse(view) *
-                glm::translate(glm::mat4(1.0), glm::vec3(1.5f, -1.5f, -2.5f)) *
-                glm::rotate(glm::mat4(1.0), glm::radians(-10.0f),
-                    glm::vec3(1, 0, 0)) *
-                glm::rotate(glm::mat4(1.0), glm::radians(170.0f), glm::vec3(0, 1, 0));
+            rodM = glm::inverse(view);
+            rodM = glm::translate(rodM, glm::vec3(1.5f, -1.5f, -2.5f));
+
+            float castAngle = 0.0f;
+            if (castAnimTimer > 0.0f) {
+                if (castAnimTimer < 0.4f) {
+                    float t = castAnimTimer / 0.4f;
+                    castAngle = t * 50.0f;
+                }
+                else {
+                    float t = (castAnimTimer - 0.4f) / 0.2f;
+                    castAngle = 50.0f * (1.0f - t);
+                }
+            }
+            rodM = glm::rotate(rodM, (-10.0f + castAngle), glm::vec3(1, 0, 0));
+            rodM = glm::rotate(rodM, (170.0f), glm::vec3(0, 1, 0));
         }
         else {
             // third person back
@@ -382,6 +471,101 @@ void Application::render() {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &rodM[0][0]);
     fishingRod->draw(*mainShader);
 
+    // fishing line draw logic
+    if (hasFishingRod && isFishing && !isTransitioning) {
+
+        glm::vec3 rodTipPos = glm::vec3(rodM * glm::vec4(0.0f, 7.5f, 0.0f, 1.0f));
+
+        std::vector<float> lineVertices;
+        int segments = 20;
+
+        if (fishingState == FISHING_IDLE) {
+            glm::vec3 currentLineEnd = rodTipPos + glm::vec3(0.0f, -6.5f, 0.0f);
+
+            float swing = sin(glfwGetTime() * 3.0f) * 0.1f;
+            currentLineEnd.x += swing;
+
+            lineVertices.push_back(rodTipPos.x); lineVertices.push_back(rodTipPos.y); lineVertices.push_back(rodTipPos.z);
+            lineVertices.push_back(currentLineEnd.x); lineVertices.push_back(currentLineEnd.y); lineVertices.push_back(currentLineEnd.z);
+        }
+        else {
+            float slack;
+            if (fishingState == FISHING_BITING) {
+                slack = (sin(glfwGetTime() * 50.0f) + 1.0f) * 0.2f;
+            }
+            else {
+                slack = 10.0f;
+            }
+
+            glm::vec3 p0 = rodTipPos;
+            glm::vec3 p2 = hookWorldPos;
+
+            glm::vec3 p1 = (p0 + p2) * 0.5f;
+            p1.y -= slack;
+
+            for (int i = 0; i <= segments; i++) {
+                float t = (float)i / (float)segments;
+
+                float u = 1.0f - t;
+                float tt = t * t;
+                float uu = u * u;
+
+                glm::vec3 p = (uu * p0) + (2 * u * t * p1) + (tt * p2);
+
+                lineVertices.push_back(p.x);
+                lineVertices.push_back(p.y);
+                lineVertices.push_back(p.z);
+            }
+        }
+
+        glBindVertexArray(lineVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, lineVertices.size() * sizeof(float), lineVertices.data());
+
+        sunShader->use();
+        glm::mat4 lineModel = glm::mat4(1.0f);
+        glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj * view * lineModel)[0][0]);
+
+        glLineWidth(2.0f);
+
+        if (fishingState == FISHING_IDLE) {
+            glDrawArrays(GL_LINES, 0, 2);
+        }
+        else {
+            glDrawArrays(GL_LINE_STRIP, 0, segments + 1);
+        }
+
+        glLineWidth(1.0f);
+        glBindVertexArray(0);
+
+        if (fishingState != FISHING_IDLE) {
+            glm::vec3 bobberPos = hookWorldPos;
+            if (fishingState == FISHING_BITING) {
+                bobberPos.y += 0.5f;
+                float jerk = sin(glfwGetTime() * 50.0f) * 0.15f;
+                bobberPos.y += jerk;
+            }
+            else {
+                bobberPos.y += sin(glfwGetTime() * 4.0f) * 0.1f;
+            }
+
+            bobberShader->use();
+
+            glm::mat4 bobberModel = glm::translate(glm::mat4(1.0f), bobberPos);
+
+            bobberModel = glm::rotate(bobberModel, glm::radians(15.0f), glm::vec3(0, 0, 1));
+            bobberModel = glm::scale(bobberModel, glm::vec3(0.075f));
+
+            glUniformMatrix4fv(glGetUniformLocation(bobberShader->getId(), "model"), 1, GL_FALSE, &bobberModel[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(bobberShader->getId(), "view"), 1, GL_FALSE, &view[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(bobberShader->getId(), "projection"), 1, GL_FALSE, &proj[0][0]);
+
+            sunMesh->draw(*bobberShader);
+        }
+    }
+
+    mainShader->use();
+
     // hammock & cabin
     glm::mat4 hamBase = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(210, -20, 25)), glm::vec3(5.0f)), glm::radians(45.0f), glm::vec3(0, 1, 0));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * hamBase)[0][0]);
@@ -400,7 +584,7 @@ void Application::render() {
     cabinDoor->draw(*mainShader);
 
     // marker
-    if (extraWindow == nullptr) {
+    if (extraWindow == nullptr && !isFishing) {
         glm::mat4 markM = glm::translate(glm::mat4(1.0f), interactionPoint);
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * markM)[0][0]);
         sunMesh->draw(*mainShader);
@@ -505,7 +689,7 @@ void Application::handleTPressed() {
 }
 
 bool Application::checkNearWater(glm::vec3 pos) {
-    if (glm::distance(pos, glm::vec3(-120, -18, -85)) < 95) return true;
+    if (glm::distance(pos, glm::vec3(-120, -18, -85)) < 103) return true;
     if (glm::distance(pos, glm::vec3(200, -18, 120)) < 70) return true;
     return false;
 }
@@ -594,6 +778,37 @@ bool Application::CheckCollision(glm::vec3 nextPos) {
     }
 
     return false;
+}
+
+void Application::handleMouseClick() {
+    if (!isFishing || isTransitioning) return;
+
+    if (fishingState == FISHING_IDLE) {
+        glm::vec3 camPos = camera.getCameraPosition();
+        glm::vec3 camDir = camera.getCameraViewDirection();
+
+        hookWorldPos = camPos + glm::normalize(glm::vec3(camDir.x, 0, camDir.z)) * 35.0f;
+
+        hookWorldPos.y = -20.0f;
+
+        // Trigger Animation
+        castAnimTimer = 0.0001f;
+
+        fishingState = FISHING_WAITING;
+        fishingTimer = 0.0f;
+        timeToBite = 2.0f + (rand() % 20) / 10.0f;
+        fishingMessage = "Waiting for a bite...";
+        castAnimTimer = 0.0001f;
+    }
+    else if (fishingState == FISHING_WAITING) {
+        fishingState = FISHING_IDLE;
+        fishingMessage = "Pulled too early! Try again.";
+    }
+    else if (fishingState == FISHING_BITING) {
+        fishingState = FISHING_IDLE;
+        fishCaughtCount++;
+        fishingMessage = "Caught a fish! Total: " + std::to_string(fishCaughtCount);
+    }
 }
 
 Application::~Application() {

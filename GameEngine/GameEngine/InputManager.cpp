@@ -35,6 +35,15 @@ void InputManager::handleCursorLock(GLFWwindow* window) {
 void InputManager::updateKeyboard(GLFWwindow* window, Application& app, float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
 
+    // left click logic
+    static bool mouseWasDown = false;
+    bool mouseIsDown = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+    if (mouseIsDown && !mouseWasDown) {
+        app.handleMouseClick();
+    }
+    mouseWasDown = mouseIsDown;
+
     if (!app.isFishing) {
         float speed = 20.0f * deltaTime;
         glm::vec3 dir(0.0f);

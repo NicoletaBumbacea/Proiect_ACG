@@ -165,6 +165,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />
+    <None Include="Shaders\bobber_fragment.glsl" />
+    <None Include="Shaders\bobber_vertex.glsl" />
     <None Include="Shaders\fragment_shader.glsl" />
     <None Include="Shaders\river_fragment_shader.glsl" />
     <None Include="Shaders\river_vertex_shader.glsl" />

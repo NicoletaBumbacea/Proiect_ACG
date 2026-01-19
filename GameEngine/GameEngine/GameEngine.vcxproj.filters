@@ -159,6 +159,8 @@
     <None Include="Shaders\skybox_vertex.glsl" />
     <None Include="Shaders\skybox_fragment.glsl" />
     <None Include="imgui.ini" />
+    <None Include="Shaders\bobber_vertex.glsl" />
+    <None Include="Shaders\bobber_fragment.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\wood.bmp">

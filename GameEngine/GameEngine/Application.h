@@ -29,6 +29,7 @@ public:
     void handleEPressed();
     void handleTPressed();
     bool CheckCollision(glm::vec3 nextPos);
+    void handleMouseClick();
 
 private:
     void initImGui();
@@ -52,6 +53,30 @@ private:
     bool hasFishingRod, isFishing, isTransitioning, isZoomingIn, isDoorOpen;
     bool showTaskWindow, eKeyPressedLastFrame, enterPressedLastFrame;
     float transitionTimer, transitionDuration, currentDoorSlide;
+
+    // fishing action variables
+    enum FishingState {
+        FISHING_IDLE,
+        FISHING_WAITING, 
+        FISHING_BITING,  
+        FISHING_CAUGHT   
+    };
+
+    FishingState fishingState;
+    float fishingTimer;
+    float timeToBite;        
+    int fishCaughtCount;     
+    std::string fishingMessage; 
+
+    // rod animation
+    float castAnimTimer = 0.0f;
+
+    // rod line
+    unsigned int lineVAO, lineVBO;
+    glm::vec3 hookWorldPos;
+
+    // rod bobber
+    Shader* bobberShader;
 
     //task 1
     int currentTask = 0; 

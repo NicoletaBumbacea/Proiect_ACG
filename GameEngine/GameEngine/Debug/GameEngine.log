@@ -1,5 +1,9 @@
 ﻿  Application.cpp
-  InputManager.cpp
-  main.cpp
-  Generating Code...
-  GameEngine.vcxproj -> C:\Users\Maria\Documents\GitHub\Proiect_ACG\GameEngine\Debug\GameEngine.exe
+C:\Users\Mike\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Application.cpp(485,25): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Mike\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Application.cpp(494,61): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Mike\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Application.cpp(545,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Mike\Documents\GitHub\Proiect_ACG\GameEngine\GameEngine\Application.cpp(549,58): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\Mike\Documents\GitHub\Proiect_ACG\GameEngine\Debug\vc120.pdb'; linking object as if no debug info
+  GameEngine.vcxproj -> C:\Users\Mike\Documents\GitHub\Proiect_ACG\GameEngine\Debug\GameEngine.exe
