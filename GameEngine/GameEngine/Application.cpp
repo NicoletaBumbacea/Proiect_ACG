@@ -510,6 +510,92 @@ bool Application::checkNearWater(glm::vec3 pos) {
     return false;
 }
 
+bool Application::CheckCollision(glm::vec3 nextPos) {
+    
+   //preventing falling off the edge
+    if (nextPos.x < -270.0f || nextPos.x > 270.0f ||
+        nextPos.z < -230.0f || nextPos.z > 203.0f) {
+        return true; 
+    }
+
+    // lake (rectangle AABB)
+    float lakeMinX = 200.0f - 60.0f;
+    float lakeMaxX = 200.0f + 60.0f;
+    float lakeMinZ = 120.0f - 60.0f;
+    float lakeMaxZ = 120.0f + 60.0f;
+
+    if (nextPos.x > lakeMinX && nextPos.x < lakeMaxX &&
+        nextPos.z > lakeMinZ && nextPos.z < lakeMaxZ) {
+        return true;
+    }
+
+    // river (circle)
+    float riverX = -120.0f;
+    float riverZ = -85.0f;
+    float riverRadius = 101.0f; 
+    float distToRiver = glm::distance(glm::vec2(nextPos.x, nextPos.z), glm::vec2(riverX, riverZ));
+
+    if (distToRiver < riverRadius) {
+        return true;
+    }
+
+    struct Obstacle {
+        glm::vec3 pos;
+        float radius;
+    };
+
+    std::vector<Obstacle> obstacles = {
+        // bear
+        { glm::vec3(23.0f, -20.0f, -102.0f), 5.0f },
+        // trees 
+        { glm::vec3(225.0f, -20.0f, -162.0f), 4.0f },
+        { glm::vec3(205.0f, -20.0f, -175.0f), 4.0f },
+        { glm::vec3(170.0f, -20.0f, -155.0f), 4.0f },
+      
+    };
+
+    for (const auto& obs : obstacles) {
+        float d = glm::distance(glm::vec2(nextPos.x, nextPos.z), glm::vec2(obs.pos.x, obs.pos.z));
+        if (d < obs.radius) {
+            return true;
+        }
+    }
+
+    // boat
+    float boatX = -28.0f;
+    float boatZ = -56.0f;
+    float boatWidth = 8.0f;  
+    float boatLength = 18.0f; 
+
+    if (nextPos.x > (boatX - boatWidth) && nextPos.x < (boatX + boatWidth) &&
+        nextPos.z >(boatZ - boatLength) && nextPos.z < (boatZ + boatLength)) {
+        return true;
+    }
+
+   // hammock
+    float hamX = 210.0f;
+    float hamZ = 25.0f;
+    float hamWidth = 5.0f;
+    float hamLength = 26.0f;
+
+    if (nextPos.x > (hamX - hamWidth) && nextPos.x < (hamX + hamWidth) &&
+        nextPos.z >(hamZ - hamLength) && nextPos.z < (hamZ + hamLength)) {
+        return true;
+    }
+     //cabin
+    float cabinMinX = 205.0f - 32.5f;
+    float cabinMaxX = 205.0f + 25.0f;
+    float cabinMinZ = -70.0f - 25.0f;
+    float cabinMaxZ = -70.0f + 25.0f;
+
+    if (nextPos.x > cabinMinX && nextPos.x < cabinMaxX &&
+        nextPos.z > cabinMinZ && nextPos.z < cabinMaxZ) {
+        return true;
+    }
+
+    return false;
+}
+
 Application::~Application() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

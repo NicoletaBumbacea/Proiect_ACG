@@ -28,6 +28,7 @@ public:
     void handleEnterPressed();
     void handleEPressed();
     void handleTPressed();
+    bool CheckCollision(glm::vec3 nextPos);
 
 private:
     void initImGui();

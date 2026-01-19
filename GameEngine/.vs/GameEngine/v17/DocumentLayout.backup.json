@@ -1,22 +1,10 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\",
+  "WorkspaceRootPath": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\InputManager.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\InputManager.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Application.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Application.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{7DB4A041-6210-429F-8FF3-63462ADD6A69}|GameEngine\\GameEngine.vcxproj|solutionrelative:GameEngine\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -31,52 +19,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "InputManager.cpp",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\InputManager.cpp",
-              "RelativeDocumentMoniker": "GameEngine\\InputManager.cpp",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\InputManager.cpp",
-              "RelativeToolTip": "GameEngine\\InputManager.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-01-18T23:03:38.03Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Player.cpp",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Player.cpp",
-              "RelativeDocumentMoniker": "GameEngine\\Player.cpp",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Player.cpp",
-              "RelativeToolTip": "GameEngine\\Player.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAA9AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-01-18T22:25:11.374Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "Application.cpp",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.cpp",
+              "DocumentMoniker": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.cpp",
               "RelativeDocumentMoniker": "GameEngine\\Application.cpp",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.cpp",
+              "ToolTip": "C:\\Users\\Maria\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.cpp",
               "RelativeToolTip": "GameEngine\\Application.cpp",
-              "ViewState": "AgIAAMYBAAAAAAAAAAAqwPsBAABIAAAAAAAAAA==",
+              "ViewState": "AgIAAEECAAAAAAAAAAAUwFoCAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-01-18T22:10:18.265Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Application.h",
-              "DocumentMoniker": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.h",
-              "RelativeDocumentMoniker": "GameEngine\\Application.h",
-              "ToolTip": "C:\\Users\\aleni\\Documents\\GitHub\\Proiect_ACG\\GameEngine\\GameEngine\\Application.h",
-              "RelativeToolTip": "GameEngine\\Application.h",
-              "ViewState": "AgIAABUAAAAAAAAAAAAiwD4AAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2026-01-18T22:10:12.711Z",
+              "WhenOpened": "2026-01-19T08:51:22.069Z",
               "EditorCaption": ""
             }
           ]
