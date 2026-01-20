@@ -111,6 +111,11 @@ private:
     // gui on/off
     bool f3PressedLastFrame = false;
 
+    // buy system
+    int currentCatSkin = 0;
+    const int SKIN_PRICE = 200;
+    bool hasBoughtUpgrade = false;
+
     // bed position
     glm::vec3 hammockPos = glm::vec3(210.0f, -20.0f, 25.0f);
 

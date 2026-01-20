@@ -344,17 +344,27 @@ void Application::render() {
         ImGui::Spacing();
         ImGui::Separator();
 
-        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Optional:");
+        if (currentTask >= 8) {
 
-        if (hasSleptOnce) {
-            ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[X] Sleep through the night");
-        }
-        else {
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "[ ] Sleep through the night");
-        }
+            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Optional Achievements:");
 
-        ImGui::Spacing();
-        ImGui::Separator();
+            if (hasSleptOnce) {
+                ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[X] Sleep through the night");
+            }
+            else {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "[ ] Sleep through the night");
+            }
+
+            if (hasBoughtUpgrade) {
+                ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[X] Fashionista: Buy a new coat");
+            }
+            else {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "[ ] Fashionista: Buy a new coat");
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+        }
 
         // time debug
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Time Control:");
@@ -419,15 +429,21 @@ void Application::render() {
             );
 
             ImGui::SetWindowFontScale(1.5f);
-            ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), "Fish in Backpack: %d", fishCaughtCount);
+
+            // time based text color
+            bool isNight = (timeOfDay > 18.0f || timeOfDay < 5.0f);
+            ImVec4 fishColor = isNight ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+            ImGui::TextColored(fishColor, "Fish in Backpack: %d", fishCaughtCount);
             ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Cash: $%d", money);
             if (glm::length(player->position - hammockPos) < 15.0f) {
                 ImGui::Spacing();
-                if (timeOfDay > 18.0f || timeOfDay < 5.0f) {
+
+                if (isNight) {
                     ImGui::TextColored(ImVec4(0.5f, 0.5f, 1.0f, 1.0f), "Press [Z] to Sleep");
                 }
                 else {
-                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Can only sleep at night");
+                    ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), "Can only sleep at night");
                 }
             }
 
@@ -583,6 +599,59 @@ void Application::render() {
             ImGui::EndDisabled();
         }
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Text("Upgrades (Cost: $%d)", SKIN_PRICE);
+        ImGui::Spacing();
+
+        // orange
+        if (currentCatSkin == 1) {
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "Equipped: Orange Tabby");
+        }
+        else {
+            if (money >= SKIN_PRICE) {
+                if (ImGui::Button("Buy Orange Coat", ImVec2(160, 40))) {
+                    money -= SKIN_PRICE;
+                    currentCatSkin = 1;
+                    hasBoughtUpgrade = true;
+                }
+            }
+            else {
+                ImGui::BeginDisabled();
+                ImGui::Button("Need $200", ImVec2(160, 40));
+                ImGui::EndDisabled();
+            }
+        }
+
+        ImGui::SameLine();
+
+        // black
+        if (currentCatSkin == 2) {
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "Equipped: Midnight");
+        }
+        else {
+            if (money >= SKIN_PRICE) {
+                if (ImGui::Button("Buy Black Coat", ImVec2(160, 40))) {
+                    money -= SKIN_PRICE;
+                    currentCatSkin = 2;
+                    hasBoughtUpgrade = true;
+                }
+            }
+            else {
+                ImGui::BeginDisabled();
+                ImGui::Button("Need $200", ImVec2(160, 40));
+                ImGui::EndDisabled();
+            }
+        }
+
+        // reset
+        if (currentCatSkin != 0) {
+            ImGui::Spacing();
+            if (ImGui::Button("Reset to Normal", ImVec2(330, 30))) {
+                currentCatSkin = 0;
+            }
+        }
+
         ImGui::End();
     }
 
@@ -623,6 +692,11 @@ void Application::render() {
     //main shader for models
     mainShader->use();
     renderer.applyLighting(*mainShader, lightPos, lightColor, camPos);
+    // cat color
+    glm::vec3 defaultTint = glm::vec3(1.0f, 1.0f, 1.0f);
+    glUniform3fv(glGetUniformLocation(mainShader->getId(), "materialTint"), 1, &defaultTint[0]);
+
+    // sun color
     glUniform3fv(glGetUniformLocation(mainShader->getId(), "lightDir"), 1, &sunLightDir[0]);
     glUniform3fv(glGetUniformLocation(mainShader->getId(), "lightColor"), 1, &sunLightColor[0]);
     GLuint MatrixID = glGetUniformLocation(mainShader->getId(), "MVP");
@@ -843,7 +917,20 @@ void Application::render() {
     if (isFishing && !isTransitioning) drawCat = false;
     if (isTransitioning && isZoomingIn && (transitionTimer / transitionDuration > 0.8f))
         drawCat = false;
-    if (drawCat) player->draw(*mainShader, view, proj);
+    if (drawCat) {
+        glm::vec3 catColor;
+
+        if (currentCatSkin == 0)      catColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        else if (currentCatSkin == 1) catColor = glm::vec3(1.0f, 0.6f, 0.2f);
+        else if (currentCatSkin == 2) catColor = glm::vec3(0.3f, 0.3f, 0.3f);
+
+        glUniform3fv(glGetUniformLocation(mainShader->getId(), "materialTint"), 1, &catColor[0]);
+
+        player->draw(*mainShader, view, proj);
+
+        // revert color
+        glUniform3fv(glGetUniformLocation(mainShader->getId(), "materialTint"), 1, &defaultTint[0]);
+    }
 
     // light source
     sunShader->use();

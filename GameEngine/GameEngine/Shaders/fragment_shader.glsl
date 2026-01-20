@@ -10,6 +10,7 @@ uniform sampler2D texture1;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform vec3 materialTint;
 
 void main()
 {
@@ -29,7 +30,7 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;  
         
-    vec3 result = (ambient + diffuse + specular) * texColor.rgb;
+    vec3 result = (ambient + diffuse + specular) * texColor.rgb * materialTint;
     
     fragColor = vec4(result, texColor.a);
 }
