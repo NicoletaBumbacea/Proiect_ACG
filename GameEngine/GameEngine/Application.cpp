@@ -34,13 +34,15 @@ Application::Application()
     interactionPoint(205.0f, -15.0f, -70.0f),
     lightPos(-180.0f, 100.0f, -200.0f),
     lightColor(1.0f, 1.0f, 1.0f),
-    extraWindow(nullptr),
     startTransitionPos(0.0f)
 {
-   
+    doorZOffset = 3.8f;
+
     bearPos = glm::vec3(23.0f, -20.0f, -102.0f);
     showBearDialog = false;
     pressedT = false;
+
+    penguinPos = glm::vec3(205.0f, -20.0f, -40.0f);
 
     // fishing init
     fishingState = FISHING_IDLE;
@@ -48,6 +50,10 @@ Application::Application()
     timeToBite = 0.0f;
     fishCaughtCount = 0;
     fishingMessage = "Press Left Click to Cast";
+
+    // shop init
+    money = 0;
+    showShop = false;
 
     //mouse callback to the camera with window pointer
     glfwSetWindowUserPointer(window.getWindow(), &camera);
@@ -126,12 +132,15 @@ void Application::initAssets() {
     std::vector<Texture> t_dark = { {loadBMP("Resources/Textures/darkwood.bmp"), "texture_diffuse"} };
     std::vector<Texture> t_rock = { {loadBMP("Resources/Textures/rock_cabin.bmp"), "texture_diffuse"} };
     std::vector<Texture> t_bear = { {loadBMP("Resources/Textures/bear.bmp"), "texture_diffuse"} };
+    std::vector<Texture> t_penguin = { {loadBMP("Resources/Textures/penguin.bmp"), "texture_diffuse"} };
+
 
     // mesh loader
     MeshLoaderObj loader;
     sunMesh = new Mesh(loader.loadObj("Resources/Models/sphere.obj", t_orange));
     plane = new Mesh(loader.loadObj("Resources/Models/plane.obj", t_sand));
     bear = new Mesh(loader.loadObj("Resources/Models/bear.obj", t_bear));
+    penguin = new Mesh(loader.loadObj("Resources/Models/penguin.obj", t_penguin));
     boat = new Mesh(loader.loadObj("Resources/Models/boat.obj", t_boat));
     reed = new Mesh(loader.loadObj("Resources/Models/reed.obj", t_reed));
     tree = new Mesh(loader.loadObj("Resources/Models/bigtree.obj", t_tree));
@@ -184,6 +193,9 @@ void Application::run() {
 void Application::update() {
     // update obj
     player->update(deltaTime);
+
+    // get cat in cabin
+    player->position.y = getTerrainHeight(player->position);
 
     if (currentTask == 0) {
         if (pressedW && pressedA && pressedS && pressedD) {
@@ -279,6 +291,7 @@ void Application::render() {
         ImGui::Spacing();
         ImGui::Separator();
         if (ImGui::Button("Close Menu")) showTaskWindow = false;
+    
 
         // fishing
         if (isFishing) {
@@ -316,6 +329,7 @@ void Application::render() {
 
             ImGui::SetWindowFontScale(1.5f);
             ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), "Fish in Backpack: %d", fishCaughtCount);
+            ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Cash: $%d", money);
 
             ImGui::End();
         }
@@ -344,6 +358,71 @@ void Application::render() {
             currentTask = 2;
             currentTaskText = "Task 3: Find the Rod at [190, -195] and pick it up (Press E).";
         }
+        ImGui::End();
+    }
+
+    if (showShop) {
+        ImGui::SetNextWindowPos(ImVec2(300, 300), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+
+        // Pass '&showShop' so the X button in the corner works to close it
+        ImGui::Begin("Interaction Menu (Fish Shop)", &showShop);
+        ImGui::SetWindowFontScale(1.2f);
+
+        // --- TOP RIGHT STATS ---
+        // 1. Save current cursor position (Left side)
+        float startY = ImGui::GetCursorPosY();
+
+        // 2. Calculate text width to align it to the right
+        // We assume roughly 150 pixels for the text block
+        ImGui::SameLine(ImGui::GetWindowWidth() - 180);
+
+        // 3. Draw the stats
+        ImGui::BeginGroup(); // Group them to keep them aligned
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Backpack: %d Fish", fishCaughtCount);
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cash: $%d", money);
+        ImGui::EndGroup();
+
+        // 4. Reset cursor to next line on the left for the main content
+        ImGui::SetCursorPosY(startY + 50.0f);
+        ImGui::Separator();
+
+        // --- SHOP CONTENT ---
+        ImGui::Text("Welcome to the Trading Post!");
+        ImGui::Text("Current Price: $%d / fish", FISH_PRICE);
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        // Button 1: Sell One
+        if (fishCaughtCount > 0) {
+            if (ImGui::Button("Sell 1 Fish ($100)", ImVec2(160, 40))) {
+                fishCaughtCount--;
+                money += FISH_PRICE;
+            }
+        }
+        else {
+            // Greyed out button if no fish
+            ImGui::BeginDisabled();
+            ImGui::Button("No Fish to Sell", ImVec2(160, 40));
+            ImGui::EndDisabled();
+        }
+
+        ImGui::SameLine(); // Put next button on the same row
+
+        // Button 2: Sell All
+        if (fishCaughtCount > 0) {
+            if (ImGui::Button("Sell ALL", ImVec2(160, 40))) {
+                int earnings = fishCaughtCount * FISH_PRICE;
+                money += earnings;
+                fishCaughtCount = 0;
+            }
+        }
+        else {
+            ImGui::BeginDisabled();
+            ImGui::Button("Sell ALL", ImVec2(160, 40));
+            ImGui::EndDisabled();
+        }
+
         ImGui::End();
     }
 
@@ -390,6 +469,11 @@ void Application::render() {
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * bearM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &bearM[0][0]);
     bear->draw(*mainShader);
+
+    glm::mat4 penguinM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(205.0f, -20.0f, -40.0f)), glm::vec3(0.075f)), (0.0f), glm::vec3(0, 1, 0));
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj* view* penguinM)[0][0]);
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &penguinM[0][0]);
+    penguin->draw(*mainShader);
 
     glm::mat4 boatM = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-28, -20, -56)), glm::vec3(0.1f));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * boatM)[0][0]);
@@ -579,12 +663,13 @@ void Application::render() {
     cabinFoundation->draw(*mainShader);
     cabin->draw(*mainShader);
     cabinRoof->draw(*mainShader);
-    glm::mat4 doorM = glm::translate(cabM, glm::vec3(-0.6f, 0.0f, 1.35f + currentDoorSlide));
+    glm::mat4 doorM = glm::rotate(glm::translate(cabM, glm::vec3(-0.6f, 0.0f, 1.35f + currentDoorSlide)), (45.0f), glm::vec3(0, 1, 0));
+    doorM = glm::translate(doorM, glm::vec3(0.0f, 0.0f, doorZOffset));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * doorM)[0][0]);
     cabinDoor->draw(*mainShader);
 
     // marker
-    if (extraWindow == nullptr && !isFishing) {
+    if (!showShop && !isFishing) {
         glm::mat4 markM = glm::translate(glm::mat4(1.0f), interactionPoint);
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * markM)[0][0]);
         sunMesh->draw(*mainShader);
@@ -602,22 +687,6 @@ void Application::render() {
     glm::mat4 sMat = glm::translate(glm::mat4(1.0f), lightPos);
     glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj * view * sMat)[0][0]);
     sunMesh->draw(*sunShader);
-
-    // popups
-    if (extraWindow != nullptr) {
-        if (glfwWindowShouldClose(extraWindow)) {
-            glfwDestroyWindow(extraWindow);
-            extraWindow = nullptr;
-        }
-        else {
-            glfwMakeContextCurrent(extraWindow);
-            glViewport(0, 0, 400, 300);
-            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glfwSwapBuffers(extraWindow);
-            glfwMakeContextCurrent(window.getWindow());
-        }
-    }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -657,10 +726,12 @@ void Application::handleEPressed() {
             }
         }
         else if (glm::length(player->position - interactionPoint) < 15.0f) {
-            if (extraWindow == nullptr)
-                extraWindow = glfwCreateWindow(400, 300, "Interaction Menu", NULL,
-                    window.getWindow());
+            showShop = !showShop;
+
+            if (showShop) showTaskWindow = false;
+            else showTaskWindow = true;
         }
+
         else if (glm::length(player->position - cabinPos) < 40.0f)
             isDoorOpen = !isDoorOpen;
     }
@@ -692,6 +763,29 @@ bool Application::checkNearWater(glm::vec3 pos) {
     if (glm::distance(pos, glm::vec3(-120, -18, -85)) < 103) return true;
     if (glm::distance(pos, glm::vec3(200, -18, 120)) < 70) return true;
     return false;
+}
+
+float Application::getTerrainHeight(glm::vec3 pos) {
+    groundLevel = -17.5f;
+    cabinFloorLevel = -9.0f;
+
+    if (pos.z > -76.0f && pos.z < -63.0f &&
+        pos.x > 173.0f && pos.x < 180.0f) {
+
+        float t = (pos.x - 173.0f) / (179.0f - 173.0f);
+
+        if (t < 0.0f) t = 0.0f;
+        if (t > 1.0f) t = 1.0f;
+
+        return glm::mix(groundLevel, cabinFloorLevel, t);
+    }
+
+    if (pos.x > 179.0f && pos.x < 229.0f &&
+        pos.z > -95.0f && pos.z < -47.0f) {
+        return cabinFloorLevel;
+    }
+
+    return groundLevel;
 }
 
 bool Application::CheckCollision(glm::vec3 nextPos) {
@@ -735,6 +829,8 @@ bool Application::CheckCollision(glm::vec3 nextPos) {
         { glm::vec3(225.0f, -20.0f, -162.0f), 4.0f },
         { glm::vec3(205.0f, -20.0f, -175.0f), 4.0f },
         { glm::vec3(170.0f, -20.0f, -155.0f), 4.0f },
+        // penguin
+        { glm::vec3(205.0f, -20.0f, -40.0f), 4.0f },
       
     };
 
@@ -766,16 +862,30 @@ bool Application::CheckCollision(glm::vec3 nextPos) {
         nextPos.z >(hamZ - hamLength) && nextPos.z < (hamZ + hamLength)) {
         return true;
     }
-     //cabin
-    float cabinMinX = 205.0f - 32.5f;
-    float cabinMaxX = 205.0f + 25.0f;
-    float cabinMinZ = -70.0f - 25.0f;
-    float cabinMaxZ = -70.0f + 25.0f;
+    //cabin
+    // back wall
+    if (nextPos.x > 225.0f && nextPos.x < 232.0f &&
+        nextPos.z > -95.0f && nextPos.z < -45.0f) return true;
 
-    if (nextPos.x > cabinMinX && nextPos.x < cabinMaxX &&
-        nextPos.z > cabinMinZ && nextPos.z < cabinMaxZ) {
-        return true;
-    }
+    // left wall
+    if (nextPos.x > 178.0f && nextPos.x < 230.0f &&
+        nextPos.z > -98.0f && nextPos.z < -92.0f) return true;
+
+    // right wall
+    if (nextPos.x > 178.0f && nextPos.x < 230.0f &&
+        nextPos.z > -50.0f && nextPos.z < -44.0f) return true;
+
+    // front wall (+door)
+    float frontWallX_Min = 178.0f;
+    float frontWallX_Max = 182.0f;
+
+    // left of door
+    if (nextPos.z > -95.0f && nextPos.z < -76.0f &&
+        nextPos.x > frontWallX_Min && nextPos.x < frontWallX_Max) return true;
+
+    // right of door
+    if (nextPos.z > -63.0f && nextPos.z < -45.0f &&
+        nextPos.x > frontWallX_Min && nextPos.x < frontWallX_Max) return true;
 
     return false;
 }

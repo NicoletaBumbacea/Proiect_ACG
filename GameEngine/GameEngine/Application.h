@@ -38,13 +38,14 @@ private:
     void render();
     void updateTitle();
     bool checkNearWater(glm::vec3 pos);
+    float getTerrainHeight(glm::vec3 pos);
 
     Window window;
     Camera camera;
     Renderer renderer;
     Skybox mySkybox;
     Player* player;
-    GLFWwindow* extraWindow;
+    bool showShop;
 
     std::vector<Fish*> schoolOfFish;
     std::vector<Fish*> schoolOfOceanFish;
@@ -53,6 +54,10 @@ private:
     bool hasFishingRod, isFishing, isTransitioning, isZoomingIn, isDoorOpen;
     bool showTaskWindow, eKeyPressedLastFrame, enterPressedLastFrame;
     float transitionTimer, transitionDuration, currentDoorSlide;
+    float doorZOffset;
+    float groundLevel;
+    float cabinFloorLevel;
+    const int FISH_PRICE = 100;
 
     // fishing action variables
     enum FishingState {
@@ -65,7 +70,8 @@ private:
     FishingState fishingState;
     float fishingTimer;
     float timeToBite;        
-    int fishCaughtCount;     
+    int fishCaughtCount;
+    int money;
     std::string fishingMessage; 
 
     // rod animation
@@ -91,11 +97,14 @@ private:
     bool showBearDialog;      
     bool pressedT;
 
+    // task 4
+    glm::vec3 penguinPos;
+
     glm::vec3 rodWorldPos, cabinPos, interactionPoint, lightPos, lightColor, startTransitionPos;
 
     Shader* mainShader, * sunShader, * waterShader, * riverShader, * skyboxShader;
 
     Mesh* sunMesh, * plane, * waterMesh, * riverMesh, * boat, * reed, * tree;
     Mesh* fishMesh, * hammock, * hammockTrees, * fishingRod, * cabin;
-    Mesh* cabinFoundation, * cabinRoof, * cabinDoor, * bear;
+    Mesh* cabinFoundation, * cabinRoof, * cabinDoor, * bear, * penguin;
 };
