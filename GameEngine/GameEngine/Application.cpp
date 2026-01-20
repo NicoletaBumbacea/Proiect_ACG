@@ -36,7 +36,7 @@ Application::Application()
     lightColor(1.0f, 1.0f, 1.0f),
     startTransitionPos(0.0f)
 {
-    doorZOffset = 3.8f;
+    doorZOffset = 3.6f;
 
     bearPos = glm::vec3(23.0f, -20.0f, -102.0f);
     showBearDialog = false;
@@ -234,7 +234,7 @@ void Application::update() {
     }
 
     // door animation logic
-    float targetSlide = isDoorOpen ? 1.2f : 0.0f;
+    float targetSlide = isDoorOpen ? -1.0f : 1.2f;
     float slideSpeed = 2.0f * deltaTime;
     if (currentDoorSlide < targetSlide)
         currentDoorSlide = std::min(currentDoorSlide + slideSpeed, targetSlide);
@@ -875,7 +875,13 @@ bool Application::CheckCollision(glm::vec3 nextPos) {
     // right of door
     if (nextPos.z > -63.0f && nextPos.z < -45.0f &&
         nextPos.x > frontWallX_Min && nextPos.x < frontWallX_Max) return true;
-
+    // closed door constraint
+    if (!isDoorOpen) {
+        if (nextPos.z > -76.0f && nextPos.z < -63.0f &&
+            nextPos.x > frontWallX_Min && nextPos.x < frontWallX_Max) {
+            return true;
+        }
+    }
     return false;
 }
 
