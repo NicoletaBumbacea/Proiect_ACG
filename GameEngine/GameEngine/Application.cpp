@@ -31,7 +31,6 @@ Application::Application()
     currentDoorSlide(0.0f),
     rodWorldPos(190.0f, -20.0f, -195.0f),
     cabinPos(205.0f, -20.0f, -70.0f),
-    interactionPoint(205.0f, -15.0f, -70.0f),
     lightPos(-180.0f, 100.0f, -200.0f),
     lightColor(1.0f, 1.0f, 1.0f),
     startTransitionPos(0.0f)
@@ -42,7 +41,7 @@ Application::Application()
     showBearDialog = false;
     pressedT = false;
 
-    penguinPos = glm::vec3(205.0f, -20.0f, -40.0f);
+    penguinPos = glm::vec3(205.0f, -11.75f, -55.0f);
 
     // fishing init
     fishingState = FISHING_IDLE;
@@ -347,16 +346,79 @@ void Application::render() {
         ImGui::Begin("Interaction", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Wise Bear says:");
         ImGui::Separator();
-        ImGui::TextWrapped("Grrrr... hello little cat.");
-        ImGui::Spacing();
-        ImGui::TextWrapped("You look hungry. I saw a Fishing Rod left by the humans near the river bank.");
-        ImGui::Spacing();
-        ImGui::TextWrapped("Go to coordinates: [190, -195]");
-        ImGui::Separator();
-        if (ImGui::Button("Thank you, Mr. Bear!", ImVec2(380, 40))) {
-            showBearDialog = false;
-            currentTask = 2;
-            currentTaskText = "Task 3: Find the Rod at [190, -195] and pick it up (Press E).";
+
+        // introduction
+        if (currentTask < 2) {
+            ImGui::TextWrapped("Grrrr... hello little cat.");
+            ImGui::TextWrapped("You look hungry. I saw a Fishing Rod left by the humans near the river bank.");
+            ImGui::Spacing();
+
+            if (ImGui::Button("Where is it?", ImVec2(380, 40))) {
+                currentTask = 2;
+                currentTaskText = "Task 3: Find the Rod at [190, -195] and pick it up.";
+            }
+        }
+
+        // task 3
+        else if (currentTask == 2) {
+            ImGui::TextWrapped("The rod is at coordinates [190, -195].");
+            ImGui::TextWrapped("Come back when you have it.");
+
+            if (ImGui::Button("I'll go look.", ImVec2(380, 40))) {
+                showBearDialog = false;
+            }
+        }
+
+        // task 3 completion and task 4
+        else if (currentTask == 3) {
+            ImGui::TextWrapped("Ah! You found it! That is a fine human tool.");
+            ImGui::TextWrapped("Now you can feed yourself.");
+            ImGui::Spacing();
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "New Objective: Catch a fish.");
+
+            if (ImGui::Button("How do I fish?", ImVec2(380, 40))) {
+                currentTask = 4;
+                currentTaskText = "Task 4: Go to the water and press Enter to enter fishing mode. Then use Left Click to fish.";
+                showBearDialog = false;
+            }
+        }
+
+        // task 4 completion and task 5
+        else if (currentTask == 5) {
+            ImGui::TextWrapped("Incredible! That is a delicious looking fish.");
+            ImGui::TextWrapped("But don't eat it yet. There is a Penguin in the cabin who craves some fish. Maybe he'll give you something for it.");
+            ImGui::Spacing();
+
+            if (ImGui::Button("Where is he?", ImVec2(380, 40))) {
+                currentTask = 6;
+                currentTaskText = "Task 5: Go to the Cabin (Penguin) and sell a fish.";
+            }
+        }
+
+        // task 5
+        else if (currentTask == 6) {
+            ImGui::TextWrapped(" The Penguin lives in a cabin somewhere around here.");
+            if (ImGui::Button("On my way.", ImVec2(380, 40))) showBearDialog = false;
+        }
+
+        // task 5 completion
+        else if (currentTask == 7) {
+            ImGui::TextWrapped("You have money in your pocket? Excellent.");
+            ImGui::TextWrapped("You have learned to survive on your own.");
+            ImGui::TextWrapped("My work here is done.");
+            ImGui::Spacing();
+
+            if (ImGui::Button("Thank you, Wise Bear!", ImVec2(380, 40))) {
+                currentTask = 8;
+                currentTaskText = "QUEST COMPLETE! You are a rich independent cat.";
+                showBearDialog = false;
+            }
+        }
+
+        // goodbye/free-roam
+        else {
+            ImGui::TextWrapped("Enjoy your life, little one.");
+            if (ImGui::Button("Bye!", ImVec2(380, 40))) showBearDialog = false;
         }
         ImGui::End();
     }
@@ -389,6 +451,10 @@ void Application::render() {
             if (ImGui::Button("Sell 1 Fish ($100)", ImVec2(160, 40))) {
                 fishCaughtCount--;
                 money += FISH_PRICE;
+                if (currentTask == 6) {
+                    currentTask = 7;
+                    currentTaskText = "Task Complete! You made your first money! Tell the Bear.";
+                }
             }
         }
         else {
@@ -404,6 +470,10 @@ void Application::render() {
                 int earnings = fishCaughtCount * FISH_PRICE;
                 money += earnings;
                 fishCaughtCount = 0;
+                if (currentTask == 6) {
+                    currentTask = 7;
+                    currentTaskText = "Task Complete! You made your first money! Tell the Bear.";
+                }
             }
         }
         else {
@@ -657,13 +727,6 @@ void Application::render() {
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * doorM)[0][0]);
     cabinDoor->draw(*mainShader);
 
-    // marker
-    if (!showShop && !isFishing) {
-        glm::mat4 markM = glm::translate(glm::mat4(1.0f), interactionPoint);
-        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * markM)[0][0]);
-        sunMesh->draw(*mainShader);
-    }
-
     // player visibility logic->hide during zoom
     bool drawCat = true;
     if (isFishing && !isTransitioning) drawCat = false;
@@ -705,7 +768,13 @@ void Application::handleEPressed() {
         float distToRod = glm::length(player->position - rodWorldPos);
         if (hasFishingRod || distToRod < 50.0f) {
             if (!hasFishingRod)
+            {
                 hasFishingRod = true;
+                if (currentTask == 2) {
+                    currentTask = 3;
+                    currentTaskText = "Task Complete! Return to the Wise Bear to show him the rod.";
+                }
+            }
             else {
                 hasFishingRod = false;
                 float yawRad = glm::radians(player->rotation.y);
@@ -714,7 +783,7 @@ void Application::handleEPressed() {
                 rodWorldPos.y = -20.0f;
             }
         }
-        else if (glm::length(player->position - interactionPoint) < 15.0f) {
+        else if (glm::length(player->position - penguinPos) < 8.0f) {
             showShop = !showShop;
 
             if (showShop) showTaskWindow = false;
@@ -723,6 +792,10 @@ void Application::handleEPressed() {
 
         else if (glm::length(player->position - cabinPos) < 40.0f)
             isDoorOpen = !isDoorOpen;
+        else if (glm::length(player->position - glm::vec3(23.0f, -20.0f, -102.0f)) < 15.0f) {
+            showBearDialog = !showBearDialog;
+        }
+
     }
 }
 
@@ -744,6 +817,30 @@ void Application::handleTPressed() {
         float distance = glm::distance(player->position, bearPos);
         if (distance < 25.0f) {
             showBearDialog = true; 
+        }
+    }
+    if (currentTask == 3) {
+        float distance = glm::distance(player->position, bearPos);
+        if (distance < 25.0f) {
+            showBearDialog = true;
+        }
+    }
+    if (currentTask == 5) {
+        float distance = glm::distance(player->position, bearPos);
+        if (distance < 25.0f) {
+            showBearDialog = true;
+        }
+    }
+    if (currentTask == 7) {
+        float distance = glm::distance(player->position, bearPos);
+        if (distance < 25.0f) {
+            showBearDialog = true;
+        }
+    }
+    if (currentTask == 8) {
+        float distance = glm::distance(player->position, bearPos);
+        if (distance < 25.0f) {
+            showBearDialog = true;
         }
     }
 }
@@ -913,6 +1010,10 @@ void Application::handleMouseClick() {
         fishingState = FISHING_IDLE;
         fishCaughtCount++;
         fishingMessage = "Caught a fish! Total: " + std::to_string(fishCaughtCount);
+        if (currentTask == 4) {
+            currentTask = 5;
+            currentTaskText = "Task Complete! You are a master fisherman. Show the fish to the Wise Bear.";
+        }
     }
 }
 
