@@ -470,7 +470,7 @@ void Application::render() {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &bearM[0][0]);
     bear->draw(*mainShader);
 
-    glm::mat4 penguinM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(205.0f, -20.0f, -40.0f)), glm::vec3(0.075f)), (0.0f), glm::vec3(0, 1, 0));
+    glm::mat4 penguinM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(205.0f, -11.75f, -55.0f)), glm::vec3(0.075f)), (180.0f), glm::vec3(0, 1, 0));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj* view* penguinM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &penguinM[0][0]);
     penguin->draw(*mainShader);
@@ -767,7 +767,7 @@ bool Application::checkNearWater(glm::vec3 pos) {
 
 float Application::getTerrainHeight(glm::vec3 pos) {
     groundLevel = -17.5f;
-    cabinFloorLevel = -9.0f;
+    cabinFloorLevel = -9.3f;
 
     if (pos.z > -76.0f && pos.z < -63.0f &&
         pos.x > 173.0f && pos.x < 180.0f) {
