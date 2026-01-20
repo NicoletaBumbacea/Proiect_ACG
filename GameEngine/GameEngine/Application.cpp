@@ -365,35 +365,26 @@ void Application::render() {
         ImGui::SetNextWindowPos(ImVec2(300, 300), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
 
-        // Pass '&showShop' so the X button in the corner works to close it
         ImGui::Begin("Interaction Menu (Fish Shop)", &showShop);
         ImGui::SetWindowFontScale(1.2f);
 
-        // --- TOP RIGHT STATS ---
-        // 1. Save current cursor position (Left side)
         float startY = ImGui::GetCursorPosY();
 
-        // 2. Calculate text width to align it to the right
-        // We assume roughly 150 pixels for the text block
         ImGui::SameLine(ImGui::GetWindowWidth() - 180);
 
-        // 3. Draw the stats
-        ImGui::BeginGroup(); // Group them to keep them aligned
+        ImGui::BeginGroup();
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "Backpack: %d Fish", fishCaughtCount);
         ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cash: $%d", money);
         ImGui::EndGroup();
 
-        // 4. Reset cursor to next line on the left for the main content
         ImGui::SetCursorPosY(startY + 50.0f);
         ImGui::Separator();
 
-        // --- SHOP CONTENT ---
         ImGui::Text("Welcome to the Trading Post!");
         ImGui::Text("Current Price: $%d / fish", FISH_PRICE);
         ImGui::Spacing();
         ImGui::Spacing();
 
-        // Button 1: Sell One
         if (fishCaughtCount > 0) {
             if (ImGui::Button("Sell 1 Fish ($100)", ImVec2(160, 40))) {
                 fishCaughtCount--;
@@ -401,15 +392,13 @@ void Application::render() {
             }
         }
         else {
-            // Greyed out button if no fish
             ImGui::BeginDisabled();
             ImGui::Button("No Fish to Sell", ImVec2(160, 40));
             ImGui::EndDisabled();
         }
 
-        ImGui::SameLine(); // Put next button on the same row
+        ImGui::SameLine();
 
-        // Button 2: Sell All
         if (fishCaughtCount > 0) {
             if (ImGui::Button("Sell ALL", ImVec2(160, 40))) {
                 int earnings = fishCaughtCount * FISH_PRICE;

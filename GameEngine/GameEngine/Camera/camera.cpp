@@ -32,7 +32,7 @@ void Camera::processMouseInput(float xoffset, float yoffset, bool constrainPitch
 
     //rotate with mouse movement
     angleAroundPlayer -= xoffset;
-    pitch += yoffset;
+    pitch -= yoffset;
 
     //camera doens't flip over the player
     if (constrainPitch)
