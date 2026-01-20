@@ -8,6 +8,7 @@ bool InputManager::isCursorLocked = true;
 bool InputManager::wasComboDown = false;
 
 void InputManager::mouse_callback(GLFWwindow* window, double xpos, double ypos, Camera& camera) {
+    //cursor unlocked -> stop rotating camera
     if (!isCursorLocked) return;
     if (firstMouse) {
         lastX = (float)xpos; lastY = (float)ypos;
@@ -16,9 +17,10 @@ void InputManager::mouse_callback(GLFWwindow* window, double xpos, double ypos, 
     float xoffset = (float)xpos - lastX;
     float yoffset = lastY - (float)ypos;
     lastX = (float)xpos; lastY = (float)ypos;
+    //update pitch/yaw
     camera.processMouseInput(xoffset, yoffset);
 }
-
+//toggle camera only if the combination is pressed 
 void InputManager::handleCursorLock(GLFWwindow* window) {
     bool ctrlDown = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
     bool rightClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
@@ -33,20 +35,22 @@ void InputManager::handleCursorLock(GLFWwindow* window) {
 }
 
 void InputManager::updateKeyboard(GLFWwindow* window, Application& app, float deltaTime) {
+   //close window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
 
-    // left click logic
+    //left click logic for fishing action
     static bool mouseWasDown = false;
     bool mouseIsDown = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-
+    
     if (mouseIsDown && !mouseWasDown) {
         app.handleMouseClick();
     }
     mouseWasDown = mouseIsDown;
-
+    //disable movement if currently fishing
     if (!app.isFishing) {
         float speed = 20.0f * deltaTime;
         glm::vec3 dir(0.0f);
+        //camera dir flattened on the XZ plane
         glm::vec3 fwd = app.camera.getCameraViewDirection();
         fwd.y = 0.0f; // lock to ground
         if (glm::length(fwd) > 0.001f) fwd = glm::normalize(fwd);
@@ -87,7 +91,7 @@ void InputManager::updateKeyboard(GLFWwindow* window, Application& app, float de
         }
 
     }
-
+    // talk to bear interaction 
     static bool tWasDown = false;
     bool tIsDown = glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS;
     if (tIsDown && !tWasDown) {

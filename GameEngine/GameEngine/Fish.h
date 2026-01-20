@@ -3,6 +3,7 @@
 
 class Fish : public GameObject {
 public:
+    //AI navigation 
     glm::vec3 target;
     float speed;
     bool isOcean;

@@ -8,6 +8,7 @@
 class Camera
 {
 private:
+    //camera vectors describing position &orientation
     glm::vec3 cameraPosition;
     glm::vec3 cameraViewDirection;
     glm::vec3 cameraUp;

@@ -6,11 +6,13 @@ void Renderer::applyLighting(Shader& shader, glm::vec3 lightPos, glm::vec3 light
     glUniform3f(glGetUniformLocation(shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), viewPos.x, viewPos.y, viewPos.z);
 }
-
+//flat plane grid used for the lake 
 Mesh Renderer::generateWaterGrid(int size, float spacing, std::vector<Texture> tex) {
     std::vector<Vertex> vertices;
     std::vector<int> indices;
+    //offset to center grid at 0,0 instead of starting at 0,0
     float offset = (size * spacing) / 2.0f;
+    //generate vertices
     for (int z = 0; z <= size; ++z) {
         for (int x = 0; x <= size; ++x) {
             Vertex v;
@@ -20,23 +22,27 @@ Mesh Renderer::generateWaterGrid(int size, float spacing, std::vector<Texture> t
             vertices.push_back(v);
         }
     }
+    //generate indices 
     for (int z = 0; z < size; ++z) {
         for (int x = 0; x < size; ++x) {
-            int tl = (z * (size + 1)) + x;
-            int tr = tl + 1;
-            int bl = ((z + 1) * (size + 1)) + x;
-            int br = bl + 1;
+            int tl = (z * (size + 1)) + x; //top-left
+            int tr = tl + 1; //top -right
+            int bl = ((z + 1) * (size + 1)) + x; //bottom-left
+            int br = bl + 1; //bottom right
+            //tl->bl->tr 
+            //tr->bl->br
             indices.insert(indices.end(), { tl, bl, tr, tr, bl, br });
         }
     }
     return Mesh(vertices, indices, tex);
 }
-
+//circle mesh for river
 Mesh Renderer::generateCircularRiver(float radius, float width, int segments, std::vector<Texture> tex) {
     std::vector<Vertex> vertices;
     std::vector<int> indices;
     float innerRadius = radius - (width / 2.0f);
     int widthSegments = 18;
+    //vertex generator with polar coords
     for (int i = 0; i <= segments; ++i) {
         float theta = (float)i / segments * 2.0f * 3.1415926f;
         for (int j = 0; j <= widthSegments; ++j) {
@@ -48,6 +54,7 @@ Mesh Renderer::generateCircularRiver(float radius, float width, int segments, st
             vertices.push_back(v);
         }
     }
+    //generate indices 
     for (int i = 0; i < segments; ++i) {
         for (int j = 0; j < widthSegments; ++j) {
             int tl = (i * (widthSegments + 1)) + j;

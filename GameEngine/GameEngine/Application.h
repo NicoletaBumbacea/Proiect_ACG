@@ -28,15 +28,18 @@ public:
     void handleEnterPressed();
     void handleEPressed();
     void handleTPressed();
-    bool CheckCollision(glm::vec3 nextPos);
     void handleMouseClick();
 
+    bool CheckCollision(glm::vec3 nextPos);
+    
 private:
+    //initialization routines
     void initImGui();
     void initAssets();
     void update();
     void render();
     void updateTitle();
+    //helper functions 
     bool checkNearWater(glm::vec3 pos);
     float getTerrainHeight(glm::vec3 pos);
 

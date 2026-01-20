@@ -26,9 +26,11 @@ Application::Application()
     showTaskWindow(true),
     eKeyPressedLastFrame(false),
     enterPressedLastFrame(false),
+    //animation timers
     transitionTimer(0.0f),
     transitionDuration(1.0f),
     currentDoorSlide(0.0f),
+    //world positions
     rodWorldPos(190.0f, -20.0f, -195.0f),
     cabinPos(205.0f, -20.0f, -70.0f),
     lightPos(-180.0f, 100.0f, -200.0f),
@@ -36,7 +38,8 @@ Application::Application()
     startTransitionPos(0.0f)
 {
     doorZOffset = 3.6f;
-
+    
+    //bear position
     bearPos = glm::vec3(23.0f, -20.0f, -102.0f);
     showBearDialog = false;
     pressedT = false;
@@ -62,9 +65,11 @@ Application::Application()
             InputManager::mouse_callback(w, x, y, *cam);
         });
 
+    //lock the cursor to the center of the screen 
     glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_DEPTH_TEST);
+    //transparent textures
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -72,12 +77,14 @@ Application::Application()
     initAssets();
 }
 
+
 void Application::initImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     (void)io;
     ImGuiStyle& style = ImGui::GetStyle();
+    //rounding corners 
     style.WindowRounding = 10.0f;
     style.FrameRounding = 5.0f;
     style.PopupRounding = 5.0f;
@@ -99,6 +106,7 @@ void Application::initImGui() {
 }
 
 void Application::initAssets() {
+    //shaders
     mainShader = new Shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
     sunShader = new Shader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
     waterShader = new Shader("Shaders/water_vertex_shader.glsl", "Shaders/water_fragment_shader.glsl");
@@ -134,7 +142,7 @@ void Application::initAssets() {
     std::vector<Texture> t_penguin = { {loadBMP("Resources/Textures/penguin.bmp"), "texture_diffuse"} };
 
 
-    // mesh loader
+    // mesh loader using obj 
     MeshLoaderObj loader;
     sunMesh = new Mesh(loader.loadObj("Resources/Models/sphere.obj", t_orange));
     plane = new Mesh(loader.loadObj("Resources/Models/plane.obj", t_sand));
@@ -155,7 +163,7 @@ void Application::initAssets() {
     // player
     player = new Player(new Mesh(loader.loadObj("Resources/Models/cat.obj", t_cat)));
 
-    // procedural grids
+    //water generation
     waterMesh = new Mesh(renderer.generateWaterGrid(120, 1.0f, t_water));
     riverMesh = new Mesh(renderer.generateCircularRiver(50.0f, 100.0f, 100, t_water));
 
@@ -163,7 +171,7 @@ void Application::initAssets() {
     for (int i = 0; i < 5; i++) schoolOfFish.push_back(new Fish(fishMesh, false));
     for (int i = 0; i < 10; i++) schoolOfOceanFish.push_back(new Fish(fishMesh, true));
 
-    // rod line
+    // buffers for dynamic fishing line drawing
     glGenVertexArrays(1, &lineVAO);
     glGenBuffers(1, &lineVBO);
     glBindVertexArray(lineVAO);
@@ -190,18 +198,18 @@ void Application::run() {
 }
 
 void Application::update() {
-    // update obj
+    // update player movement
     player->update(deltaTime);
 
-    //time cycle
+    //Day/night cycle
     timeOfDay += daySpeed * deltaTime;
     if (timeOfDay >= 24.0f) timeOfDay -= 24.0f;
 
-    // sun position
+    // calc sun position 
     float angle = glm::radians((timeOfDay - 6.0f) * 15.0f);
     sunLightDir = glm::normalize(glm::vec3(cos(angle), sin(angle), 0.2f));
 
-    // sun color
+    // sun color based on sun height 
     float sunHeight = sunLightDir.y;
     glm::vec3 DayColor = glm::vec3(1.0f, 0.95f, 0.8f);
     glm::vec3 SunsetColor = glm::vec3(1.0f, 0.6f, 0.3f);  
@@ -227,7 +235,7 @@ void Application::update() {
 
     // get cat in cabin
     player->position.y = getTerrainHeight(player->position);
-
+    // task 1 logic
     if (currentTask == 0) {
         if (pressedW && pressedA && pressedS && pressedD) {
             currentTask = 1;
@@ -235,6 +243,7 @@ void Application::update() {
             std::cout << "Task 1 Complete!" << std::endl;
         }
     }
+    //update fish AI
     for (auto f : schoolOfFish) f->update(deltaTime);
     for (auto f : schoolOfOceanFish) f->update(deltaTime);
 
@@ -261,12 +270,14 @@ void Application::update() {
         }
     }
     else if (isFishing) {
+        //keep camera locked in 1st person
         camera.setCameraPosition(firstPersonPos);
     }
 
     // door animation logic
     float targetSlide = isDoorOpen ? -1.0f : 1.2f;
     float slideSpeed = 2.0f * deltaTime;
+    //linear slide interpolation
     if (currentDoorSlide < targetSlide)
         currentDoorSlide = std::min(currentDoorSlide + slideSpeed, targetSlide);
     else if (currentDoorSlide > targetSlide)
@@ -285,14 +296,14 @@ void Application::update() {
             }
         }
     }
-
+    //fishing cast animation timer
     if (castAnimTimer > 0.0f) {
         castAnimTimer += deltaTime;
         if (castAnimTimer >= 0.6f) {
             castAnimTimer = 0.0f;
         }
     }
-
+    // sleeping mechanic
     if (glm::length(player->position - hammockPos) < 10.0f) {
         if (glfwGetKey(window.getWindow(), GLFW_KEY_Z) == GLFW_PRESS) {
 
@@ -304,7 +315,7 @@ void Application::update() {
             }
         }
     }
-
+    // toggle UI with F3
     if (glfwGetKey(window.getWindow(), GLFW_KEY_F3) == GLFW_PRESS) {
         if (!f3PressedLastFrame) {
             showTaskWindow = !showTaskWindow;
@@ -317,6 +328,7 @@ void Application::update() {
 }
 
 void Application::render() {
+    //start ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -331,7 +343,7 @@ void Application::render() {
         ImGui::Separator();
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "Current Task:");
         ImGui::TextWrapped("%s", currentTaskText.c_str());
-
+        // WASD checkboxes 
         if (currentTask == 0) {
             ImGui::Spacing();
             ImGui::Text("Stretches:");
@@ -343,7 +355,7 @@ void Application::render() {
 
         ImGui::Spacing();
         ImGui::Separator();
-
+        //achievements 
         if (currentTask >= 8) {
 
             ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Optional Achievements:");
@@ -394,7 +406,7 @@ void Application::render() {
         if (ImGui::Button("Close Menu")) showTaskWindow = false;
     
 
-        // fishing
+        // fishing status 
         if (isFishing) {
             ImGui::SetNextWindowPos(ImVec2(780, 780), ImGuiCond_Always);
             ImGui::Begin("Fishing Status", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
@@ -430,12 +442,13 @@ void Application::render() {
 
             ImGui::SetWindowFontScale(1.5f);
 
-            // time based text color
+            // time based text color for contrast
             bool isNight = (timeOfDay > 18.0f || timeOfDay < 5.0f);
             ImVec4 fishColor = isNight ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
             ImGui::TextColored(fishColor, "Fish in Backpack: %d", fishCaughtCount);
             ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Cash: $%d", money);
+           //interaction prompt
             if (glm::length(player->position - hammockPos) < 15.0f) {
                 ImGui::Spacing();
 
@@ -452,7 +465,7 @@ void Application::render() {
 
         ImGui::End();
     }
-
+    // bear dialog 
     if (showBearDialog) {
         ImGuiIO& io = ImGui::GetIO();
         ImVec2 center(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
@@ -539,7 +552,7 @@ void Application::render() {
         }
         ImGui::End();
     }
-
+    //shop window
     if (showShop) {
         ImGui::SetNextWindowPos(ImVec2(300, 300), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
@@ -563,7 +576,7 @@ void Application::render() {
         ImGui::Text("Current Price: $%d / fish", FISH_PRICE);
         ImGui::Spacing();
         ImGui::Spacing();
-
+        // selling logic 
         if (fishCaughtCount > 0) {
             if (ImGui::Button("Sell 1 Fish ($100)", ImVec2(160, 40))) {
                 fishCaughtCount--;
@@ -604,7 +617,7 @@ void Application::render() {
         ImGui::Text("Upgrades (Cost: $%d)", SKIN_PRICE);
         ImGui::Spacing();
 
-        // orange
+        // skin upgrade -> orange skin 
         if (currentCatSkin == 1) {
             ImGui::TextColored(ImVec4(0, 1, 0, 1), "Equipped: Orange Tabby");
         }
@@ -625,7 +638,7 @@ void Application::render() {
 
         ImGui::SameLine();
 
-        // black
+        // skin upgrade -> black skin 
         if (currentCatSkin == 2) {
             ImGui::TextColored(ImVec4(0, 1, 0, 1), "Equipped: Midnight");
         }
@@ -644,7 +657,7 @@ void Application::render() {
             }
         }
 
-        // reset
+        // reset skin 
         if (currentCatSkin != 0) {
             ImGui::Spacing();
             if (ImGui::Button("Reset to Normal", ImVec2(330, 30))) {
@@ -654,7 +667,7 @@ void Application::render() {
 
         ImGui::End();
     }
-
+    // render 
     glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -665,7 +678,7 @@ void Application::render() {
     glm::mat4 proj = glm::perspective(90.0f, aspect, 0.1f, 10000.0f);
     glm::mat4 view = camera.getViewMatrix();
     glm::vec3 camPos = camera.getCameraPosition();
-
+    // set sun position 
     lightPos = camPos + (sunLightDir * 1000.0f);
     lightColor = sunLightColor;
 
@@ -674,14 +687,14 @@ void Application::render() {
     glUniform3fv(glGetUniformLocation(skyboxShader->getId(), "tintColor"), 1, &skyColor[0]);
     mySkybox.draw(*skyboxShader, view, proj);
 
-    // draw water & river
+    // draw water 
     waterShader->use();
     renderer.applyLighting(*waterShader, lightPos, lightColor, camPos);
     glm::mat4 waterModel = glm::translate(glm::mat4(1.0f), glm::vec3(200.0f, -20.0f, 120.0f));
     glUniformMatrix4fv(glGetUniformLocation(waterShader->getId(), "MVP"), 1, GL_FALSE, &(proj * view * waterModel)[0][0]);
     glUniform1f(glGetUniformLocation(waterShader->getId(), "time"), (float)glfwGetTime());
     waterMesh->draw(*waterShader);
-
+    // draw river
     riverShader->use();
     renderer.applyLighting(*riverShader, lightPos, lightColor, camPos);
     glm::mat4 riverModel = glm::translate(glm::mat4(1.0f), glm::vec3(-120.0f, -19.5f, -85.0f));
@@ -702,23 +715,23 @@ void Application::render() {
     GLuint MatrixID = glGetUniformLocation(mainShader->getId(), "MVP");
     GLuint ModelMatrixID = glGetUniformLocation(mainShader->getId(), "model");
 
-    //static environment
+    //static environment(ground) 
     glm::mat4 pM = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0, -20, 0)), glm::vec3(3.0f));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * pM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &pM[0][0]);
     plane->draw(*mainShader);
 
-
+    //draw bear
     glm::mat4 bearM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(23.0f, -20, -102)), glm::vec3(1.5f)), (45.0f), glm::vec3(0, 1, 0));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * bearM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &bearM[0][0]);
     bear->draw(*mainShader);
-
+    //draw penguin 
     glm::mat4 penguinM = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(205.0f, -11.75f, -55.0f)), glm::vec3(0.075f)), (180.0f), glm::vec3(0, 1, 0));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj* view* penguinM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &penguinM[0][0]);
     penguin->draw(*mainShader);
-
+    //draw boat
     glm::mat4 boatM = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-28, -20, -56)), glm::vec3(0.1f));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * boatM)[0][0]);
     boat->draw(*mainShader);
@@ -741,7 +754,7 @@ void Application::render() {
         tree->draw(*mainShader);
     }
 
-    // fih
+    // draw fih
     for (auto f : schoolOfFish) f->draw(*mainShader, view, proj);
     for (auto f : schoolOfOceanFish) f->draw(*mainShader, view, proj);
 
@@ -755,6 +768,7 @@ void Application::render() {
 
             float castAngle = 0.0f;
             if (castAnimTimer > 0.0f) {
+                //casting animation 
                 if (castAnimTimer < 0.4f) {
                     float t = castAnimTimer / 0.4f;
                     castAngle = t * 50.0f;
@@ -793,7 +807,7 @@ void Application::render() {
         rodM = glm::rotate(rodM, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
-    //scaling and draw call
+    //scaling and draw rod
     rodM = glm::scale(rodM, glm::vec3(1.5f, 1.5f, 1.5f));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * rodM)[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &rodM[0][0]);
@@ -801,13 +815,14 @@ void Application::render() {
 
     // fishing line draw logic
     if (hasFishingRod && isFishing && !isTransitioning) {
-
+        //calculate rod tip position 
         glm::vec3 rodTipPos = glm::vec3(rodM * glm::vec4(0.0f, 7.5f, 0.0f, 1.0f));
 
         std::vector<float> lineVertices;
         int segments = 20;
 
         if (fishingState == FISHING_IDLE) {
+            //line hangs straight with slight swing
             glm::vec3 currentLineEnd = rodTipPos + glm::vec3(0.0f, -6.5f, 0.0f);
 
             float swing = sin(glfwGetTime() * 3.0f) * 0.1f;
@@ -817,9 +832,10 @@ void Application::render() {
             lineVertices.push_back(currentLineEnd.x); lineVertices.push_back(currentLineEnd.y); lineVertices.push_back(currentLineEnd.z);
         }
         else {
+            //line extends to water (quadratic bezier curve) 
             float slack;
             if (fishingState == FISHING_BITING) {
-                slack = (sin(glfwGetTime() * 50.0f) + 1.0f) * 0.2f;
+                slack = (sin(glfwGetTime() * 50.0f) + 1.0f) * 0.2f; // vibration
             }
             else {
                 slack = 10.0f;
@@ -845,7 +861,7 @@ void Application::render() {
                 lineVertices.push_back(p.z);
             }
         }
-
+        // upload and draw line 
         glBindVertexArray(lineVAO);
         glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, lineVertices.size() * sizeof(float), lineVertices.data());
@@ -865,7 +881,7 @@ void Application::render() {
 
         glLineWidth(1.0f);
         glBindVertexArray(0);
-
+        // bobber rendering 
         if (fishingState != FISHING_IDLE) {
             glm::vec3 bobberPos = hookWorldPos;
             if (fishingState == FISHING_BITING) {
@@ -907,6 +923,7 @@ void Application::render() {
     cabinFoundation->draw(*mainShader);
     cabin->draw(*mainShader);
     cabinRoof->draw(*mainShader);
+    // door animation 
     glm::mat4 doorM = glm::rotate(glm::translate(cabM, glm::vec3(-0.6f, 0.0f, 1.35f + currentDoorSlide)), (45.0f), glm::vec3(0, 1, 0));
     doorM = glm::translate(doorM, glm::vec3(0.0f, 0.0f, doorZOffset));
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj * view * doorM)[0][0]);
@@ -917,9 +934,10 @@ void Application::render() {
     if (isFishing && !isTransitioning) drawCat = false;
     if (isTransitioning && isZoomingIn && (transitionTimer / transitionDuration > 0.8f))
         drawCat = false;
+
     if (drawCat) {
         glm::vec3 catColor;
-
+        // skin logic 
         if (currentCatSkin == 0)      catColor = glm::vec3(1.0f, 1.0f, 1.0f);
         else if (currentCatSkin == 1) catColor = glm::vec3(1.0f, 0.6f, 0.2f);
         else if (currentCatSkin == 2) catColor = glm::vec3(0.3f, 0.3f, 0.3f);
@@ -932,24 +950,20 @@ void Application::render() {
         glUniform3fv(glGetUniformLocation(mainShader->getId(), "materialTint"), 1, &defaultTint[0]);
     }
 
-    // light source
+    // draw sun 
     sunShader->use();
     glm::mat4 sMat = glm::translate(glm::mat4(1.0f), lightPos);
     sMat = glm::scale(sMat, glm::vec3(2.5f));
     glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj* view* sMat)[0][0]);
     glUniform3fv(glGetUniformLocation(sunShader->getId(), "sunColor"), 1, &sunLightColor[0]);
     sunMesh->draw(*sunShader);
-
+    // draw moon 
     glm::vec3 moonPos = camPos + (-sunLightDir * 1000.0f);
-
     glm::mat4 mMat = glm::translate(glm::mat4(1.0f), moonPos);
     mMat = glm::scale(mMat, glm::vec3(2.5f));
-
     glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj* view* mMat)[0][0]);
-
     glm::vec3 moonColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glUniform3fv(glGetUniformLocation(sunShader->getId(), "sunColor"), 1, &moonColor[0]);
-
     sunMesh->draw(*sunShader);
 
     ImGui::Render();
@@ -958,8 +972,8 @@ void Application::render() {
 }
 
 void Application::handleEnterPressed() {
-    if (!isFishing && !isTransitioning && hasFishingRod &&
-        checkNearWater(player->position)) {
+    //fishing only if the cat has the rod and is near water
+    if (!isFishing && !isTransitioning && hasFishingRod && checkNearWater(player->position)) {
         isTransitioning = true;
         isZoomingIn = true;
         transitionTimer = 0.0f;
@@ -971,17 +985,21 @@ void Application::handleEnterPressed() {
 
 void Application::handleEPressed() {
     if (isFishing && !isTransitioning) {
+        // exit fishing mode 
         isTransitioning = true;
         isZoomingIn = false;
         transitionTimer = 0.0f;
         startTransitionPos = camera.getCameraPosition();
     }
     else {
+        //free roam
+        //fishing rod pickup/drop
         float distToRod = glm::length(player->position - rodWorldPos);
         if (hasFishingRod || distToRod < 50.0f) {
             if (!hasFishingRod)
             {
                 hasFishingRod = true;
+                //quest progress
                 if (currentTask == 2) {
                     currentTask = 3;
                     currentTaskText = "Task Complete! Return to the Wise Bear to show him the rod.";
@@ -989,21 +1007,24 @@ void Application::handleEPressed() {
             }
             else {
                 hasFishingRod = false;
+                //place rod on ground 
                 float yawRad = glm::radians(player->rotation.y);
                 rodWorldPos =
                     player->position - (glm::vec3(sin(yawRad), 0, cos(yawRad)) * 10.0f);
                 rodWorldPos.y = -20.0f;
             }
         }
+        //shop interaction 
         else if (glm::length(player->position - penguinPos) < 8.0f) {
             showShop = !showShop;
 
             if (showShop) showTaskWindow = false;
             else showTaskWindow = true;
         }
-
+        //cabin door interaction
         else if (glm::length(player->position - cabinPos) < 40.0f)
             isDoorOpen = !isDoorOpen;
+        //bear interaction 
         else if (glm::length(player->position - glm::vec3(23.0f, -20.0f, -102.0f)) < 15.0f) {
             showBearDialog = !showBearDialog;
         }
@@ -1024,7 +1045,7 @@ void Application::updateTitle() {
 }
 
 void Application::handleTPressed() {
-
+    //check if cat is near bear for tasks
     if (currentTask == 1) {
         float distance = glm::distance(player->position, bearPos);
         if (distance < 25.0f) {
@@ -1056,13 +1077,13 @@ void Application::handleTPressed() {
         }
     }
 }
-
+//cat within range of water bodies 
 bool Application::checkNearWater(glm::vec3 pos) {
     if (glm::distance(pos, glm::vec3(-120, -18, -85)) < 103) return true;
     if (glm::distance(pos, glm::vec3(200, -18, 120)) < 70) return true;
     return false;
 }
-
+//calc ground height for cabin stairs and floor 
 float Application::getTerrainHeight(glm::vec3 pos) {
     groundLevel = -17.5f;
     cabinFloorLevel = -9.3f;
@@ -1077,7 +1098,7 @@ float Application::getTerrainHeight(glm::vec3 pos) {
 
         return glm::mix(groundLevel, cabinFloorLevel, t);
     }
-
+    //cabin floor 
     if (pos.x > 179.0f && pos.x < 229.0f &&
         pos.z > -95.0f && pos.z < -47.0f) {
         return cabinFloorLevel;
@@ -1085,7 +1106,7 @@ float Application::getTerrainHeight(glm::vec3 pos) {
 
     return groundLevel;
 }
-
+//collision detection 
 bool Application::CheckCollision(glm::vec3 nextPos) {
     
    //preventing falling off the edge
@@ -1114,7 +1135,7 @@ bool Application::CheckCollision(glm::vec3 nextPos) {
     if (distToRiver < riverRadius) {
         return true;
     }
-
+    //circular static obstacles
     struct Obstacle {
         glm::vec3 pos;
         float radius;
@@ -1196,28 +1217,30 @@ bool Application::CheckCollision(glm::vec3 nextPos) {
 
 void Application::handleMouseClick() {
     if (!isFishing || isTransitioning) return;
-
+    // idle -> casting 
     if (fishingState == FISHING_IDLE) {
         glm::vec3 camPos = camera.getCameraPosition();
         glm::vec3 camDir = camera.getCameraViewDirection();
-
+        //hook position based on camera
         hookWorldPos = camPos + glm::normalize(glm::vec3(camDir.x, 0, camDir.z)) * 35.0f;
-
         hookWorldPos.y = -20.0f;
 
-        // Trigger Animation
+        // trigger animation
         castAnimTimer = 0.0001f;
 
         fishingState = FISHING_WAITING;
         fishingTimer = 0.0f;
+        //randomize bite time 
         timeToBite = 2.0f + (rand() % 20) / 10.0f;
         fishingMessage = "Waiting for a bite...";
         castAnimTimer = 0.0001f;
     }
+    // pulled too early 
     else if (fishingState == FISHING_WAITING) {
         fishingState = FISHING_IDLE;
         fishingMessage = "Pulled too early! Try again.";
     }
+    //biting -> success
     else if (fishingState == FISHING_BITING) {
         fishingState = FISHING_IDLE;
         fishCaughtCount++;
@@ -1228,7 +1251,7 @@ void Application::handleMouseClick() {
         }
     }
 }
-
+//destructor
 Application::~Application() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

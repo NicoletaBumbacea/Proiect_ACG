@@ -1,20 +1,22 @@
 #include "camera.h"
 
 Camera::Camera()
-{
+{    // camera settings for 3rd person view
     this->cameraPosition = glm::vec3(0.0f, 0.0f, 100.0f);
     this->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
     this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    //orbit parameters 
     this->distanceFromPlayer = 30.0f;
     this->angleAroundPlayer = 0.0f;
     this->pitch = 20.0f;
 }
 
 Camera::Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec3 cameraUp)
-{
+{   
     this->cameraPosition = cameraPosition;
     this->cameraViewDirection = cameraViewDirection;
     this->cameraUp = cameraUp;
+    //orbit values if position is manually set
     this->distanceFromPlayer = 30.0f;
     this->angleAroundPlayer = 0.0f;
     this->pitch = 20.0f;
@@ -31,8 +33,8 @@ void Camera::processMouseInput(float xoffset, float yoffset, bool constrainPitch
     yoffset *= sensitivity;
 
     //rotate with mouse movement
-    angleAroundPlayer -= xoffset;
-    pitch -= yoffset;
+    angleAroundPlayer -= xoffset; //yaw - around the player
+    pitch -= yoffset; // pitch - up/down
 
     //camera doens't flip over the player
     if (constrainPitch)
