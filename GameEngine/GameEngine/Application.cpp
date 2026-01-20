@@ -193,6 +193,38 @@ void Application::update() {
     // update obj
     player->update(deltaTime);
 
+    //time cycle
+    timeOfDay += daySpeed * deltaTime;
+    if (timeOfDay >= 24.0f) timeOfDay -= 24.0f;
+
+    // sun position
+    float angle = glm::radians((timeOfDay - 6.0f) * 15.0f);
+    sunLightDir = glm::normalize(glm::vec3(cos(angle), sin(angle), 0.2f));
+
+    // sun color
+    float sunHeight = sunLightDir.y;
+    glm::vec3 DayColor = glm::vec3(1.0f, 0.95f, 0.8f);
+    glm::vec3 SunsetColor = glm::vec3(1.0f, 0.6f, 0.3f);  
+    glm::vec3 NightColor = glm::vec3(0.4f, 0.4f, 0.65f);
+
+    glm::vec3 DaySky = glm::vec3(0.5f, 0.7f, 1.0f);
+    glm::vec3 SunsetSky = glm::vec3(0.8f, 0.4f, 0.2f);
+    glm::vec3 NightSky = glm::vec3(0.05f, 0.05f, 0.1f);
+    // switch to day
+    if (sunHeight > 0.0f) {
+        float t = glm::clamp(sunHeight / 0.2f, 0.0f, 1.0f);
+
+        sunLightColor = glm::mix(SunsetColor, DayColor, t);
+        skyColor = glm::mix(SunsetSky, DaySky, t);
+    }
+    // switch to night
+    else {
+        float t = glm::clamp(-sunHeight / 0.2f, 0.0f, 1.0f);
+
+        sunLightColor = glm::mix(SunsetColor, NightColor, t);
+        skyColor = glm::mix(SunsetSky, NightSky, t);
+    }
+
     // get cat in cabin
     player->position.y = getTerrainHeight(player->position);
 
@@ -260,6 +292,28 @@ void Application::update() {
             castAnimTimer = 0.0f;
         }
     }
+
+    if (glm::length(player->position - hammockPos) < 10.0f) {
+        if (glfwGetKey(window.getWindow(), GLFW_KEY_Z) == GLFW_PRESS) {
+
+            if (timeOfDay > 18.0f || timeOfDay < 5.0f) {
+                timeOfDay = 6.0f;
+                hasSleptOnce = true;
+
+                std::cout << "You slept through the night..." << std::endl;
+            }
+        }
+    }
+
+    if (glfwGetKey(window.getWindow(), GLFW_KEY_F3) == GLFW_PRESS) {
+        if (!f3PressedLastFrame) {
+            showTaskWindow = !showTaskWindow;
+            f3PressedLastFrame = true;
+        }
+    }
+    else {
+        f3PressedLastFrame = false;
+    }
 }
 
 void Application::render() {
@@ -289,6 +343,44 @@ void Application::render() {
 
         ImGui::Spacing();
         ImGui::Separator();
+
+        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Optional:");
+
+        if (hasSleptOnce) {
+            ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[X] Sleep through the night");
+        }
+        else {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "[ ] Sleep through the night");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // time debug
+        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Time Control:");
+
+        // morning
+        if (ImGui::Button("6 AM", ImVec2(80, 30))) {
+            timeOfDay = 6.0f;
+        }
+
+        ImGui::SameLine();
+
+        // noon
+        if (ImGui::Button("12 PM", ImVec2(80, 30))) {
+            timeOfDay = 12.0f;
+        }
+
+        ImGui::SameLine();
+
+        // night
+        if (ImGui::Button("7 PM", ImVec2(80, 30))) {
+            timeOfDay = 19.0f;
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
         if (ImGui::Button("Close Menu")) showTaskWindow = false;
     
 
@@ -329,6 +421,15 @@ void Application::render() {
             ImGui::SetWindowFontScale(1.5f);
             ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), "Fish in Backpack: %d", fishCaughtCount);
             ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Cash: $%d", money);
+            if (glm::length(player->position - hammockPos) < 15.0f) {
+                ImGui::Spacing();
+                if (timeOfDay > 18.0f || timeOfDay < 5.0f) {
+                    ImGui::TextColored(ImVec4(0.5f, 0.5f, 1.0f, 1.0f), "Press [Z] to Sleep");
+                }
+                else {
+                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Can only sleep at night");
+                }
+            }
 
             ImGui::End();
         }
@@ -485,6 +586,9 @@ void Application::render() {
         ImGui::End();
     }
 
+    glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     window.clear();
 
     //shared matrices
@@ -493,7 +597,12 @@ void Application::render() {
     glm::mat4 view = camera.getViewMatrix();
     glm::vec3 camPos = camera.getCameraPosition();
 
+    lightPos = camPos + (sunLightDir * 1000.0f);
+    lightColor = sunLightColor;
+
     //draw skybox
+    skyboxShader->use();
+    glUniform3fv(glGetUniformLocation(skyboxShader->getId(), "tintColor"), 1, &skyColor[0]);
     mySkybox.draw(*skyboxShader, view, proj);
 
     // draw water & river
@@ -514,6 +623,8 @@ void Application::render() {
     //main shader for models
     mainShader->use();
     renderer.applyLighting(*mainShader, lightPos, lightColor, camPos);
+    glUniform3fv(glGetUniformLocation(mainShader->getId(), "lightDir"), 1, &sunLightDir[0]);
+    glUniform3fv(glGetUniformLocation(mainShader->getId(), "lightColor"), 1, &sunLightColor[0]);
     GLuint MatrixID = glGetUniformLocation(mainShader->getId(), "MVP");
     GLuint ModelMatrixID = glGetUniformLocation(mainShader->getId(), "model");
 
@@ -737,7 +848,21 @@ void Application::render() {
     // light source
     sunShader->use();
     glm::mat4 sMat = glm::translate(glm::mat4(1.0f), lightPos);
-    glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj * view * sMat)[0][0]);
+    sMat = glm::scale(sMat, glm::vec3(2.5f));
+    glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj* view* sMat)[0][0]);
+    glUniform3fv(glGetUniformLocation(sunShader->getId(), "sunColor"), 1, &sunLightColor[0]);
+    sunMesh->draw(*sunShader);
+
+    glm::vec3 moonPos = camPos + (-sunLightDir * 1000.0f);
+
+    glm::mat4 mMat = glm::translate(glm::mat4(1.0f), moonPos);
+    mMat = glm::scale(mMat, glm::vec3(2.5f));
+
+    glUniformMatrix4fv(glGetUniformLocation(sunShader->getId(), "MVP"), 1, GL_FALSE, &(proj* view* mMat)[0][0]);
+
+    glm::vec3 moonColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    glUniform3fv(glGetUniformLocation(sunShader->getId(), "sunColor"), 1, &moonColor[0]);
+
     sunMesh->draw(*sunShader);
 
     ImGui::Render();

@@ -3,12 +3,12 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D texture_diffuse1;
+uniform vec3 sunColor;
 
 void main()
 {
     
     vec2 debugCoords = gl_FragCoord.xy / 700.0; 
     
-    FragColor = texture(texture_diffuse1, debugCoords);
+    FragColor = vec4(sunColor, 1.0);
 }

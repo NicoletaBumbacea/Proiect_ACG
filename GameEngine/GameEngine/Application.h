@@ -97,8 +97,22 @@ private:
     bool showBearDialog;      
     bool pressedT;
 
-    // task 4
+    // task 5
     glm::vec3 penguinPos;
+
+    //day/night
+    float timeOfDay = 8.0f;
+    float daySpeed = 0.0875f;
+    glm::vec3 sunLightDir; 
+    glm::vec3 sunLightColor; 
+    glm::vec3 skyColor;
+    bool hasSleptOnce = false;
+
+    // gui on/off
+    bool f3PressedLastFrame = false;
+
+    // bed position
+    glm::vec3 hammockPos = glm::vec3(210.0f, -20.0f, 25.0f);
 
     glm::vec3 rodWorldPos, cabinPos, interactionPoint, lightPos, lightColor, startTransitionPos;
 
